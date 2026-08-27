@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数学Ⅰ 中間考査対策 ～数式魔王への挑戦～</title>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#08080f; --panel:#12121e; --panel2:#1a1a2e;
+  --gold:#f0c040; --gold2:#a07010;
+  --green:#22c55e; --red:#ef4444; --blue:#3b82f6; --purple:#a855f7;
+  --white:#e8e8f0; --gray:#666688; --dim:#333355;
+  --px:'DotGothic16',monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{
+  background:var(--bg);
+  color:var(--white);
+  font-family:var(--px);
+  height:100dvh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  position:relative;
+}
+
+/* ══ 星空 ══ */
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background-image:
+    radial-gradient(1px 1px at 8% 15%,#fff9,transparent),
+    radial-gradient(1px 1px at 25% 40%,#fff6,transparent),
+    radial-gradient(1px 1px at 42% 8%,#fff8,transparent),
+    radial-gradient(1px 1px at 60% 25%,#fff5,transparent),
+    radial-gradient(1px 1px at 78% 55%,#fff7,transparent),
+    radial-gradient(1px 1px at 15% 72%,#fff6,transparent),
+    radial-gradient(1px 1px at 50% 65%,#fff5,transparent),
+    radial-gradient(1px 1px at 88% 12%,#fff8,transparent),
+    radial-gradient(1px 1px at 35% 85%,#fff4,transparent),
+    radial-gradient(1px 1px at 92% 78%,#fff6,transparent),
+    radial-gradient(1px 1px at 70% 90%,#fff5,transparent),
+    radial-gradient(1px 1px at 5%  50%,#fff7,transparent);
+}
+
+/* ══ 画面レイヤー管理 ══ */
+.screen{
+  position:absolute;inset:0;
+  display:flex;flex-direction:column;
+  z-index:1;
+  transition:opacity .3s ease;
+}
+.screen.hidden{opacity:0;pointer-events:none;}
+
+/* ══════════════════════
+   タイトル画面
+══════════════════════ */
+#titleScreen{
+  justify-content:center;align-items:center;
+  background:radial-gradient(ellipse at 50% 40%,#1a1040 0%,var(--bg) 70%);
+  gap:20px;padding:24px;text-align:center;
+}
+.title-logo{
+  font-size:clamp(1rem,4vw,1.6rem);
+  color:var(--gold);
+  text-shadow:3px 3px 0 #000,0 0 30px #f0c04066;
+  line-height:1.7;letter-spacing:.08em;
+}
+.title-sub{font-size:.72rem;color:var(--gray);letter-spacing:.15em;margin-top:4px;}
+.title-enemy{font-size:5rem;filter:drop-shadow(0 0 20px #a855f788);animation:float 3s ease-in-out infinite;}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.start-btn{
+  background:linear-gradient(135deg,#1a3a1a,#0d200d);
+  border:2px solid var(--green);color:#86efac;
+  font-family:var(--px);font-size:.95rem;
+  padding:14px 40px;border-radius:3px;cursor:pointer;
+  letter-spacing:.12em;
+  box-shadow:0 0 20px #22c55e33;
+  transition:all .15s;
+  animation:blinkBtn 1.5s ease-in-out infinite;
+}
+.start-btn:hover{background:#0d2a0d;box-shadow:0 0 30px #22c55e66;transform:scale(1.04);}
+@keyframes blinkBtn{0%,100%{box-shadow:0 0 20px #22c55e33}50%{box-shadow:0 0 30px #22c55e77}}
+.quest-count{font-size:.7rem;color:var(--gray);}
+
+/* ══════════════════════
+   バトル画面
+══════════════════════ */
+#battleScreen{flex-direction:column;overflow:hidden;}
+
+/* ── 上部ステータス ── */
+.hud{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 12px;
+  background:var(--panel);
+  border-bottom:2px solid var(--dim);
+  flex-shrink:0;z-index:10;position:relative;
+}
+.hud-block{flex:1;min-width:0;}
+.hud-name{font-size:.6rem;color:var(--gray);margin-bottom:3px;}
+.hud-hp-label{font-size:.58rem;color:var(--gray);}
+.bar-wrap{height:9px;background:#050508;border:1px solid #222;border-radius:2px;overflow:hidden;}
+.bar-fill{height:100%;border-radius:1px;transition:width .5s ease,background .3s;}
+.hero-bar{background:var(--green);}
+.hero-bar.mid{background:#eab308;}
+.hero-bar.low{background:var(--red);}
+.enemy-bar{background:var(--red);}
+.bar-num{font-size:.58rem;color:var(--white);margin-top:2px;}
+.hud-sep{width:1px;height:36px;background:var(--dim);flex-shrink:0;}
+.hud-score{text-align:center;min-width:52px;}
+.hud-score-label{font-size:.55rem;color:var(--gray);}
+.hud-score-val{font-size:.9rem;color:var(--gold);}
+
+/* ── 敵エリア ── */
+.enemy-stage{
+  flex:0 0 auto;
+  background:linear-gradient(180deg,#0a0a1a 0%,#0d0d18 100%);
+  border-bottom:2px solid var(--dim);
+  padding:12px 16px;
+  display:flex;align-items:center;gap:14px;
+  position:relative;overflow:hidden;
+}
+.enemy-stage::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,var(--dim),transparent);
+}
+.enemy-sprite{
+  font-size:clamp(2.8rem,10vw,4.2rem);
+  flex-shrink:0;
+  filter:drop-shadow(0 0 10px #a855f755);
+  transition:transform .15s,filter .15s;
+  line-height:1;
+  position:relative;
+}
+.enemy-sprite.shake{animation:shakeE .35s ease;}
+.enemy-sprite.attack{animation:attackE .4s ease;}
+.enemy-sprite.dead{animation:deadE .6s ease forwards;}
+@keyframes shakeE{0%,100%{transform:translateX(0)}20%{transform:translateX(-10px)}60%{transform:translateX(10px)}}
+@keyframes attackE{0%,100%{transform:translateX(0)}40%{transform:translateX(-20px) scale(1.1)}70%{transform:translateX(5px)}}
+@keyframes deadE{0%{opacity:1;transform:scale(1) rotate(0)}100%{opacity:0;transform:scale(.2) rotate(30deg)}}
+
+.enemy-info{flex:1;min-width:0;}
+.enemy-lv{font-size:.58rem;color:var(--purple);margin-bottom:2px;}
+.enemy-name{font-size:.85rem;color:var(--gold);text-shadow:1px 1px 0 #000;margin-bottom:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+/* ── バトルログ ── */
+.battle-log{
+  flex:0 0 auto;
+  background:#04040a;
+  border-bottom:2px solid var(--dim);
+  padding:8px 14px;
+  min-height:48px;max-height:62px;
+  overflow:hidden;
+  font-size:.72rem;
+  line-height:1.75;
+  font-family:var(--px);
+}
+.log-atk{color:#ff8c42;}
+.log-dmg{color:var(--red);}
+.log-ok{color:var(--green);}
+.log-gold{color:var(--gold);}
+.log-info{color:#94a3b8;}
+
+/* ── 問題エリア ── */
+.question-scroll{
+  flex:1;overflow-y:auto;padding:12px 14px 16px;
+  -webkit-overflow-scrolling:touch;
+}
+.q-badge{
+  display:inline-block;
+  background:#0d1a2e;border:1px solid var(--blue);
+  color:#93c5fd;font-size:.6rem;padding:2px 10px;
+  border-radius:2px;margin-bottom:8px;letter-spacing:.08em;
+}
+.boss-warn{
+  background:#1a0d00;border:1px solid var(--gold);
+  color:var(--gold);font-size:.65rem;text-align:center;
+  padding:5px;border-radius:2px;margin-bottom:8px;letter-spacing:.1em;
+}
+.q-text{font-size:.78rem;line-height:1.9;margin-bottom:10px;font-family:var(--px);}
+
+/* ── 数式 ── */
+.mj{font-family:'Times New Roman','Noto Serif JP',serif;font-style:italic;letter-spacing:.02em;}
+.mj sup{font-size:.72em;vertical-align:super;line-height:0;font-style:italic;}
+.mj .fr{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 2px;font-size:.85em;line-height:1.15;}
+.mj .fr .n{border-bottom:1px solid currentColor;padding:0 3px;text-align:center;min-width:1em;}
+.mj .fr .d{padding:0 3px;text-align:center;min-width:1em;}
+.mj .sq{display:inline-flex;align-items:flex-end;margin:0 1px;}
+.mj .sq-s{font-size:1.2em;line-height:1;margin-right:-1px;position:relative;top:1px;font-style:normal;}
+.mj .sq-i{border-top:1.5px solid currentColor;padding:0 3px 0 1px;line-height:1.4;}
+.mj .ab{font-style:normal;}
+
+/* ── 選択肢 ── */
+.choices{display:flex;flex-direction:column;gap:7px;}
+.choice-btn{
+  background:var(--panel2);border:2px solid var(--dim);
+  color:var(--white);border-radius:3px;
+  padding:9px 13px;font-size:.76rem;
+  font-family:var(--px);cursor:pointer;
+  transition:border-color .1s,background .1s,transform .1s;
+  text-align:left;display:flex;align-items:center;gap:9px;
+  position:relative;overflow:hidden;
+}
+.choice-btn::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--dim);transition:background .1s;}
+.choice-btn:hover:not(:disabled){border-color:var(--blue);background:#141428;transform:translateX(3px);}
+.choice-btn:hover:not(:disabled)::before{background:var(--blue);}
+.choice-btn:disabled{cursor:default;}
+.choice-btn.sel-ok{background:#0a2010;border-color:var(--green);color:#86efac;}
+.choice-btn.sel-ok::before{background:var(--green);}
+.choice-btn.sel-ng{background:#200a0a;border-color:var(--red);color:#fca5a5;}
+.choice-btn.sel-ng::before{background:var(--red);}
+.choice-btn.reveal-ok{background:#0a201044;border-color:var(--green);color:#86efac;}
+.choice-btn.reveal-ok::before{background:var(--green);}
+.choice-btn.toggled{border-color:var(--purple);background:#160a24;}
+.choice-btn.toggled::before{background:var(--purple);}
+.c-pre{color:var(--gold);font-weight:700;min-width:16px;font-size:.73rem;flex-shrink:0;}
+
+/* ── 数値入力 ── */
+.num-disp{
+  background:#020206;border:2px solid var(--dim);border-radius:3px;
+  padding:7px 13px;font-size:1rem;display:inline-block;min-width:80px;
+  text-align:center;color:var(--gold);font-family:var(--px);
+  margin-bottom:8px;min-height:36px;letter-spacing:.1em;
+}
+.num-pad{display:flex;flex-wrap:wrap;gap:5px;max-width:250px;}
+.num-pad button{
+  background:var(--panel2);border:2px solid var(--dim);color:var(--white);
+  border-radius:3px;padding:7px 11px;font-size:.76rem;
+  font-family:var(--px);cursor:pointer;transition:all .1s;min-width:38px;
+}
+.num-pad button:hover:not(:disabled){border-color:var(--gold);color:var(--gold);}
+.num-pad button:disabled{opacity:.4;cursor:default;}
+.np-del{color:#f87171!important;}
+.np-ok{background:#0d1a2e!important;border-color:var(--blue)!important;color:#93c5fd!important;font-weight:700!important;}
+
+/* ── 複数選択 ── */
+.multi-conf{
+  margin-top:9px;background:#0d1a2e;border:2px solid var(--blue);
+  color:#93c5fd;font-weight:700;border-radius:3px;
+  padding:7px 18px;font-family:var(--px);font-size:.76rem;cursor:pointer;
+}
+.multi-conf:disabled{opacity:.4;cursor:default;}
+
+/* ── 解説パネル ── */
+.expl-panel{
+  display:none;
+  background:#06060e;border-left:3px solid var(--blue);
+  border-radius:0 3px 3px 0;padding:10px 12px;margin-top:10px;
+  font-size:.7rem;color:#94a3b8;line-height:1.9;
+  font-family:'Noto Sans JP',sans-serif;
+}
+.expl-panel.show{display:block;}
+.expl-result{font-family:var(--px);font-weight:700;font-size:.76rem;margin-bottom:4px;}
+.expl-result.ok{color:var(--green);}
+.expl-result.ng{color:var(--red);}
+
+/* ── 次へボタン ── */
+.next-btn{
+  display:none;
+  width:100%;margin-top:12px;
+  background:linear-gradient(135deg,#0d1a2e,#060e1a);
+  border:2px solid var(--gold);color:var(--gold);
+  font-family:var(--px);font-size:.82rem;
+  padding:11px;border-radius:3px;cursor:pointer;
+  letter-spacing:.1em;transition:all .15s;
+}
+.next-btn:hover{background:#0d200d;border-color:var(--green);color:#86efac;}
+.next-btn.show{display:block;}
+
+/* ══ ダメージ浮かび ══ */
+.dmg-float{
+  position:fixed;font-family:var(--px);font-size:1.6rem;font-weight:700;
+  pointer-events:none;z-index:999;text-shadow:2px 2px 0 #000;
+  animation:floatUp .9s ease forwards;
+}
+@keyframes floatUp{0%{opacity:1;transform:translateY(0) scale(1.3)}100%{opacity:0;transform:translateY(-55px) scale(.8)}}
+
+/* ══ 画面フラッシュ ══ */
+.flash-overlay{
+  position:fixed;inset:0;pointer-events:none;z-index:998;
+  animation:flashAnim .35s ease forwards;
+}
+@keyframes flashAnim{0%{opacity:.5}100%{opacity:0}}
+
+/* ══ 敵登場エフェクト ══ */
+.enemy-sprite.appear{animation:appearE .4s ease;}
+@keyframes appearE{0%{opacity:0;transform:scale(1.4)}100%{opacity:1;transform:scale(1)}}
+
+/* ══════════════════════
+   結果画面（正解/不正解）
+══════════════════════ */
+#resultScreen{
+  justify-content:center;align-items:center;
+  background:#000000cc;
+  gap:12px;padding:24px;text-align:center;
+}
+.result-icon{font-size:4rem;animation:popIn .3s cubic-bezier(.2,1.4,.4,1);}
+@keyframes popIn{0%{transform:scale(0)}100%{transform:scale(1)}}
+.result-title{font-size:clamp(1.2rem,5vw,1.8rem);text-shadow:2px 2px 0 #000;}
+.result-title.ok{color:var(--green);}
+.result-title.ng{color:var(--red);}
+.result-dmg{font-size:1rem;color:var(--gray);}
+.result-expl{
+  background:#06060e;border:1px solid var(--dim);border-radius:3px;
+  padding:12px 16px;max-width:420px;width:100%;
+  font-size:.72rem;color:#94a3b8;line-height:1.9;
+  font-family:'Noto Sans JP',sans-serif;text-align:left;
+}
+.result-next{
+  background:linear-gradient(135deg,#0d1a2e,#060e1a);
+  border:2px solid var(--gold);color:var(--gold);
+  font-family:var(--px);font-size:.85rem;
+  padding:12px 36px;border-radius:3px;cursor:pointer;
+  letter-spacing:.1em;transition:all .15s;
+  animation:blinkBtn 1.2s ease-in-out infinite;
+}
+.result-next:hover{background:#1a1a00;transform:scale(1.04);}
+
+/* ══════════════════════
+   ゲームオーバー / クリア
+══════════════════════ */
+#gameoverScreen,#clearScreen{
+  justify-content:center;align-items:center;
+  background:radial-gradient(ellipse at 50% 40%,#1a0505 0%,var(--bg) 70%);
+  gap:16px;padding:24px;text-align:center;
+}
+#clearScreen{background:radial-gradient(ellipse at 50% 40%,#0a1a05 0%,var(--bg) 70%);}
+.go-title{font-size:clamp(1.4rem,6vw,2.4rem);color:var(--red);text-shadow:3px 3px 0 #000,0 0 30px #ef444466;animation:pulse 1s infinite;}
+.cl-title{font-size:clamp(1.1rem,4.5vw,1.8rem);color:var(--gold);text-shadow:3px 3px 0 #000,0 0 30px #f0c04066;line-height:1.6;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.65}}
+.end-msg{font-size:.75rem;color:var(--gray);line-height:1.9;}
+.end-score{font-size:1rem;color:var(--gold);}
+.cl-stars{font-size:2.4rem;letter-spacing:.3em;}
+.retry-btn{
+  background:linear-gradient(135deg,#1a3a1a,#0d200d);
+  border:2px solid var(--green);color:#86efac;
+  font-family:var(--px);font-size:.85rem;
+  padding:12px 34px;border-radius:3px;cursor:pointer;
+  letter-spacing:.1em;transition:all .15s;
+}
+.retry-btn:hover{background:#0d2a0d;box-shadow:0 0 20px #22c55e44;}
+
+/* ══ コンボ表示 ══ */
+.combo-banner{
+  position:fixed;top:50%;left:50%;transform:translate(-50%,-50%) scale(0);
+  z-index:990;pointer-events:none;
+  font-family:var(--px);font-size:clamp(1.4rem,6vw,2.2rem);
+  color:var(--gold);text-shadow:3px 3px 0 #000,0 0 30px #f0c040aa;
+  white-space:nowrap;
+}
+.combo-banner.pop{animation:comboPop .7s cubic-bezier(.2,1.4,.3,1) forwards;}
+@keyframes comboPop{
+  0%{transform:translate(-50%,-50%) scale(0);opacity:1}
+  60%{transform:translate(-50%,-50%) scale(1.1);opacity:1}
+  100%{transform:translate(-50%,-60%) scale(.9);opacity:0}
+}
+
+/* ══ HUD拡張行（レベル・コイン） ══ */
+.hud2{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:4px 12px;
+  background:var(--panel);
+  border-bottom:2px solid var(--dim);
+  flex-shrink:0;z-index:10;position:relative;
+  gap:8px;
+}
+.lv-block{display:flex;align-items:center;gap:6px;font-size:.68rem;}
+.lv-badge{
+  background:linear-gradient(135deg,#2a1a0a,#1a0a00);
+  border:1px solid var(--gold);color:var(--gold);
+  padding:2px 8px;border-radius:2px;font-size:.65rem;white-space:nowrap;
+}
+.lv-title{color:var(--purple);font-size:.62rem;white-space:nowrap;overflow:hidden;max-width:120px;text-overflow:ellipsis;}
+.combo-hud{font-size:.65rem;color:#ff8c42;font-family:var(--px);}
+.coin-hud{
+  display:flex;align-items:center;gap:5px;font-size:.68rem;color:var(--gold);
+}
+.coin-icon{font-size:.9rem;}
+.hint-btn{
+  background:#0d1a0d;border:1px solid var(--green);color:#86efac;
+  font-family:var(--px);font-size:.6rem;padding:3px 8px;border-radius:2px;cursor:pointer;
+  transition:all .12s;white-space:nowrap;
+}
+.hint-btn:hover:not(:disabled){background:#143014;}
+.hint-btn:disabled{opacity:.4;cursor:default;}
+
+/* ══ 実績バッジ（クリア画面） ══ */
+.badges-area{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;max-width:400px;}
+.badge{
+  background:linear-gradient(135deg,#1a1a2e,#0d0d18);
+  border:2px solid var(--dim);border-radius:6px;
+  padding:8px 12px;text-align:center;min-width:90px;
+  transition:border-color .3s;
+}
+.badge.earned{border-color:var(--gold);box-shadow:0 0 12px #f0c04044;}
+.badge-icon{font-size:1.6rem;display:block;margin-bottom:3px;}
+.badge-name{font-size:.58rem;color:var(--gold);display:block;line-height:1.4;}
+.badge-desc{font-size:.52rem;color:var(--gray);display:block;line-height:1.4;margin-top:2px;}
+.badge:not(.earned) .badge-icon{filter:grayscale(1);opacity:.35;}
+.badge:not(.earned) .badge-name{color:var(--dim);}
+</style>
+</head>
+<body>
+
+<!-- ══ タイトル ══ -->
+<div class="screen" id="titleScreen">
+  <div class="title-enemy">👑</div>
+  <div class="title-logo">⚔️ 数学Ⅰ 中間考査対策 ⚔️<br>～ 数式魔王への挑戦 ～</div>
+  <div class="title-sub">すべての敵を倒して魔王を封印せよ！</div>
+  <div class="quest-count" id="questCount"></div>
+  <button class="start-btn" id="startBtn">▶ ゲームスタート</button>
+</div>
+
+<!-- ══ バトル ══ -->
+<div class="screen hidden" id="battleScreen">
+  <!-- HUD -->
+  <div class="hud">
+    <div class="hud-block">
+      <div class="hud-name">数学の勇者</div>
+      <div class="bar-wrap"><div class="bar-fill hero-bar" id="heroBar" style="width:100%"></div></div>
+      <div class="bar-num" id="heroHpNum">HP 30/30</div>
+    </div>
+    <div class="hud-sep"></div>
+    <div class="hud-score">
+      <div class="hud-score-label">SCORE</div>
+      <div class="hud-score-val"><span id="scNow">0</span>/<span id="scTot">0</span></div>
+    </div>
+    <div class="hud-sep"></div>
+    <div class="hud-block">
+      <div class="hud-name" id="enemyHudName">???</div>
+      <div class="bar-wrap"><div class="bar-fill enemy-bar" id="enemyBar" style="width:100%"></div></div>
+      <div class="bar-num" id="enemyHpNum">HP ?/?</div>
+    </div>
+  </div>
+
+  <!-- HUD行2：レベル・コンボ・コイン -->
+  <div class="hud2">
+    <div class="lv-block">
+      <span class="lv-badge" id="lvBadge">Lv.1</span>
+      <span class="lv-title" id="lvTitle">数学見習い</span>
+    </div>
+    <span class="combo-hud" id="comboHud"></span>
+    <div class="coin-hud">
+      <span class="coin-icon">🪙</span>
+      <span id="coinDisp">0</span>
+      <button class="hint-btn" id="hintBtn" disabled>ヒント(3🪙)</button>
+    </div>
+  </div>
+
+  <!-- コンボバナー -->
+  <div class="combo-banner" id="comboBanner"></div>
+
+  <!-- 敵 -->
+  <div class="enemy-stage">
+    <div class="enemy-sprite" id="enemySprite">❓</div>
+    <div style="flex:1;min-width:0">
+      <div class="enemy-lv" id="enemyLv">Lv.?</div>
+      <div class="enemy-name" id="enemyName">???</div>
+    </div>
+  </div>
+
+  <!-- ログ -->
+  <div class="battle-log" id="battleLog"></div>
+
+  <!-- 問題 -->
+  <div class="question-scroll" id="questionArea"></div>
+</div>
+
+<!-- ══ 結果 ══ -->
+<div class="screen hidden" id="resultScreen">
+  <div class="result-icon" id="resIcon"></div>
+  <div class="result-title" id="resTitle"></div>
+  <div class="result-dmg" id="resDmg"></div>
+  <div class="result-expl" id="resExpl"></div>
+  <button class="result-next" id="resNext">▶ 次へ</button>
+</div>
+
+<!-- ══ ゲームオーバー ══ -->
+<div class="screen hidden" id="gameoverScreen">
+  <div class="go-title">💀 GAME OVER 💀</div>
+  <div class="end-msg">HPが 0 になってしまった…<br>復習してもう一度挑戦せよ！</div>
+  <div class="end-score" id="goScore"></div>
+  <button class="retry-btn" onclick="location.reload()">▶ もう一度挑戦する</button>
+</div>
+
+<!-- ══ クリア ══ -->
+<div class="screen hidden" id="clearScreen">
+  <div class="cl-stars" id="clStars">★★★</div>
+  <div class="cl-title" id="clTitle">🎉 QUEST CLEAR！<br>数式魔王を封印した！</div>
+  <div class="end-msg" id="clMsg"></div>
+  <div class="end-score" id="clScore"></div>
+  <div class="badges-area" id="badgesArea"></div>
+  <button class="retry-btn" id="clNextBtn">▶ 続きに挑戦する</button>
+  <button class="retry-btn" id="clRetryBtn" style="display:none;background:linear-gradient(135deg,#1a1a3a,#0d0d20);border-color:#a855f7;color:#d8b4fe;">▶ 最初からやり直す</button>
+</div>
+
+<script>
+// ════════════════════════════════
+// 数式ヘルパー
+// ════════════════════════════════
+const M=s=>`<span class="mj">${s}</span>`;
+const FR=(n,d)=>`<span class="fr"><span class="n">${n}</span><span class="d">${d}</span></span>`;
+const SQ=i=>`<span class="sq"><span class="sq-s">√</span><span class="sq-i">${i}</span></span>`;
+const ABS=x=>`<span class="ab">|${x}|</span>`;
+const SP=(b,e)=>`${b}<sup>${e}</sup>`;
+
+// ════════════════════════════════
+// ゲーム状態
+// ════════════════════════════════
+const HERO_MAX=30;
+const CHUNK_SIZE=12; // 1セッションの目標問題数（問の区切りを優先）
+let heroHp=HERO_MAX, score=0, answered=0, totalQ=0;
+let queueIndex=0;
+let queue=[];
+
+// ── チャンク（セッション）管理 ──
+let fullQueue=[];       // 全問キュー
+let chunkStart=0;      // 今のセッションの開始インデックス
+let chunkEnd=0;        // 今のセッションの終了インデックス（exclusive）
+let sessionScore=0;    // このセッションの正解数
+let sessionTotal=0;    // このセッションの問題数
+
+// ── ゲーム要素 ──
+let combo=0;          // 連続正解数
+let coins=0;          // 所持コイン
+let hintUsed=false;   // 現在の問題でヒント使用済みか
+let currentHintElim=null; // ヒントで消した選択肢のdisable関数
+
+// レベル定義
+const LEVELS=[
+  {lv:1, min:0,  title:'数学見習い'},
+  {lv:2, min:5,  title:'計算の戦士'},
+  {lv:3, min:10, title:'展開の剣士'},
+  {lv:4, min:16, title:'因数分解師'},
+  {lv:5, min:22, title:'代数の賢者'},
+  {lv:6, min:28, title:'根号の達人'},
+  {lv:7, min:35, title:'数式の英雄'},
+];
+function getLevel(s){ return [...LEVELS].reverse().find(l=>s>=l.min)||LEVELS[0]; }
+
+// 実績定義
+const ACHIEVEMENTS=[
+  {id:'perfect',   icon:'👑', name:'パーフェクト',     desc:'全問正解',             check:()=>score===totalQ},
+  {id:'noHit',     icon:'🛡️',name:'ノーダメージ',     desc:'HPを一度も減らさずクリア', check:()=>heroHp===HERO_MAX},
+  {id:'combo5',    icon:'🔥', name:'コンボマスター',   desc:'5コンボ以上達成',       check:()=>maxCombo>=5},
+  {id:'rich',      icon:'🪙', name:'コイン長者',       desc:'10枚以上獲得',          check:()=>totalCoinsEarned>=10},
+  {id:'noHint',    icon:'💡', name:'ヒント不要',       desc:'ヒントを使わずクリア',  check:()=>totalHintsUsed===0},
+  {id:'survivor',  icon:'❤️', name:'ぎりぎり生還',    desc:'HP1以下でクリア',       check:()=>heroHp<=1&&heroHp>0},
+];
+let maxCombo=0, totalCoinsEarned=0, totalHintsUsed=0;
+
+// ════════════════════════════════
+// 敵データ
+// ════════════════════════════════
+const ENEMIES=[
+  {name:'公式スライム王',  emoji:'🟢', lv:1,  hp:6, atk:3, reward:'展開・因数公式をマスター！'},
+  {name:'次数カウント幽霊',emoji:'👻', lv:2,  hp:2, atk:4, reward:'単項式の次数・係数を習得！'},
+  {name:'降べきゴーレム',  emoji:'🗿', lv:3,  hp:2, atk:4, reward:'多項式の整理を習得！'},
+  {name:'変数ワイバーン',  emoji:'🦎', lv:4,  hp:2, atk:4, reward:'xの整理を習得！'},
+  {name:'加減オーガ',      emoji:'👹', lv:5,  hp:2, atk:5, reward:'多項式の計算を習得！'},
+  {name:'指数デーモン',    emoji:'😈', lv:6,  hp:1, atk:5, reward:'指数法則を習得！'},
+  {name:'展開の魔導士',    emoji:'🧙', lv:7,  hp:8, atk:4, reward:'展開公式を完全制覇！'},
+  {name:'因数分解騎士',    emoji:'⚔️',lv:8,  hp:6, atk:5, reward:'因数分解を習得！'},
+  {name:'置換の暗黒騎士',  emoji:'🦹', lv:9,  hp:4, atk:6, reward:'高度な因数分解を習得！'},
+  {name:'数の賢者',        emoji:'🔮', lv:10, hp:4, atk:4, reward:'数の分類を習得！'},
+  {name:'絶対値の番人',    emoji:'🛡️',lv:11, hp:3, atk:4, reward:'絶対値を習得！'},
+  {name:'根号の精霊',      emoji:'✨', lv:12, hp:3, atk:5, reward:'根号の計算を習得！'},
+  {name:'数式大魔王',      emoji:'👑', lv:13, hp:4, atk:6, reward:'根号の応用を完全制覇！'},
+];
+
+// ════════════════════════════════
+// 問題データ（小問は enemyHp / 小問数 ずつダメージ）
+// ════════════════════════════════
+const PROBLEMS=[
+{id:'q1',label:'問１',boss:false,
+ type:'select',
+ heading:'次の空欄にあてはまるものを、下の選択肢ア〜カから選び記号で答えよ。<br>'
+  +'<span style="font-size:.65rem;color:#666688">ア.'+M('(x+a)(x+b)')+'　イ.'+M(SP('(a&minus;b)','2'))+'　ウ.'+M(SP('a','2')+'+2ab+'+SP('b','2'))+'<br>'
+  +'エ.'+M(SP('acx','2')+'+(ad+bc)x+bd')+'　オ.'+M('(a+b)(a&minus;b)')+'　カ.'+M('M(a+b)')+'</span>',
+ choiceLabels:{'ア':M('(x+a)(x+b)'),'イ':M(SP('(a&minus;b)','2')),'ウ':M(SP('a','2')+'+2ab+'+SP('b','2')),'エ':M(SP('acx','2')+'+(ad+bc)x+bd'),'オ':M('(a+b)(a&minus;b)'),'カ':M('M(a+b)')},
+ subQuestions:[
+  {label:'① '+M('Ma+Mb')+'　＝　＿＿＿',answer:'カ',expl:M('Ma+Mb')+'はMを共通因数としてくくり出すと'+M('M(a+b)')+'です。'},
+  {label:'② '+M(SP('(a+b)','2'))+'　＝　＿＿＿',answer:'ウ',expl:M(SP('(a+b)','2'))+'='+M(SP('a','2')+'+2ab+'+SP('b','2'))+' （和の平方の公式）。'},
+  {label:'③　＿＿＿　＝　'+M(SP('a','2')+'&minus;2ab+'+SP('b','2')),answer:'イ',expl:M(SP('(a&minus;b)','2'))+'='+M(SP('a','2')+'&minus;2ab+'+SP('b','2'))+' （差の平方の公式）。'},
+  {label:'④　＿＿＿　＝　'+M(SP('a','2')+'&minus;'+SP('b','2')),answer:'オ',expl:M('(a+b)(a&minus;b)')+'='+M(SP('a','2')+'&minus;'+SP('b','2'))+' （和と差の積の公式）。'},
+  {label:'⑤　＿＿＿　＝　'+M(SP('x','2')+'+(a+b)x+ab'),answer:'ア',expl:M('(x+a)(x+b)')+'='+M(SP('x','2')+'+(a+b)x+ab')+' （基本公式）。'},
+  {label:'⑥ '+M('(ax+b)(cx+d)')+'　＝　＿＿＿',answer:'エ',expl:M('(ax+b)(cx+d)')+'='+M(SP('acx','2')+'+(ad+bc)x+bd')+' （一般の展開）。'},
+ ]
+},
+{id:'q2',label:'問２',boss:false,type:'numpad',heading:'次の単項式の次数と係数をいえ。',
+ subQuestions:[
+  {label:'(1) '+M('ab')+'　の　次数',answer:'2',expl:M('ab')+'='+M('a¹b¹')+'、次数は1+1=2です。'},
+  {label:'(1) '+M('ab')+'　の　係数',answer:'1',expl:M('ab')+'の係数は1です。'},
+  {label:'(2) '+M(SP('3x','3')+'y')+'　の　次数',answer:'4',expl:'xの次数が3、yの次数が1なので3+1=4です。'},
+  {label:'(2) '+M(SP('3x','3')+'y')+'　の　係数',answer:'3',expl:'係数は3です。'},
+ ]
+},
+{id:'q3',label:'問３',boss:false,
+ heading:'次の多項式を降べきの順に整理せよ。また、何次式であるかいえ。<br>'+M(SP('4x&minus;x','2')+'&nbsp;+&nbsp;x&nbsp;+&nbsp;1&nbsp;+&nbsp;2&nbsp;+&nbsp;3'+SP('x','2')),
+ type:'choice4',
+ subQuestions:[
+  {label:'降べきの順に整理すると',choices:[M(SP('3x','2')+'+4x+3'),M('&minus;'+SP('x','2')+'+5x+3'),M(SP('2x','2')+'+5x+3'),M(SP('2x','2')+'+4x+3')],answer:2,expl:'&minus;x²+3x²=2x²、4x+x=5x、1+2=3 なので '+M(SP('2x','2')+'+5x+3')+' です。'},
+  {label:'何次式か',choices:['２次式','１次式','３次式','定数（０次式）'],answer:0,noShuffle:true,expl:'最高次の項が'+M(SP('2x','2'))+'なので２次式です。'},
+ ]
+},
+{id:'q4',label:'問４',boss:false,
+ heading:'次の多項式を、x に着目して降べきの順に整理せよ。また、x について何次式か。<br>'+M(SP('x','2')+'&nbsp;+&nbsp;2xy&nbsp;+&nbsp;5y&nbsp;&minus;&nbsp;3'+SP('x','4')),
+ type:'choice4',
+ subQuestions:[
+  {label:'x の降べきの順に整理すると',choices:[M(SP('x','2')+'&minus;3'+SP('x','4')+'+2xy+5y'),M('&minus;3'+SP('x','4')+'+2xy+'+SP('x','2')+'+5y'),M('5y+2xy+'+SP('x','2')+'&minus;3'+SP('x','4')),M('&minus;3'+SP('x','4')+'+'+SP('x','2')+'+2xy+5y')],answer:3,expl:'xの次数の高い順に並べると'+M('&minus;3'+SP('x','4')+'+'+SP('x','2')+'+2xy+5y')+'です。'},
+  {label:'x について何次式か',choices:['４次式','１次式','２次式','３次式'],answer:0,noShuffle:true,expl:'xの最高次の項は'+M('&minus;3'+SP('x','4'))+'なので４次式です。'},
+ ]
+},
+{id:'q5',label:'問５',boss:false,
+ heading:'A='+M(SP('x','2')+'&minus;4x+8')+'、B='+M(SP('x','2')+'+3x&minus;7')+'　のとき A+B と A&minus;B を計算せよ。',
+ type:'choice4',
+ subQuestions:[
+  {label:'A + B',choices:[M(SP('2x','2')+'+x+1'),M(SP('2x','2')+'&minus;x+1'),M(SP('2x','2')+'&minus;x+15'),M(SP('x','2')+'&minus;x+1')],answer:1,expl:'(x²&minus;4x+8)+(x²+3x&minus;7)='+M(SP('2x','2')+'&minus;x+1')+'です。'},
+  {label:'A &minus; B',choices:[M('7x+1'),M('&minus;7x+1'),M('7x+15'),M('&minus;7x+15')],answer:3,expl:'(x²&minus;4x+8)&minus;(x²+3x&minus;7)=&minus;7x+15です。符号に注意。'},
+ ]
+},
+{id:'q6',label:'問６',boss:false,heading:'次の式を計算せよ。',type:'choice4',
+ subQuestions:[
+  {label:M('(&minus;2'+SP('a','2')+'b)'+SP('','3')+'&times;3a'+SP('b','2')),choices:[M('24'+SP('a','7')+SP('b','5')),M('&minus;8'+SP('a','7')+SP('b','5')),M('&minus;24'+SP('a','7')+SP('b','5')),M('&minus;8'+SP('a','6')+SP('b','5'))],answer:2,expl:'(&minus;2a²b)³=&minus;8a⁶b³。&minus;8a⁶b³×3ab²=&minus;24a⁷b⁵です。'},
+ ]
+},
+{id:'q7',label:'問７',boss:false,heading:'次の式を展開せよ。',type:'choice4',
+ subQuestions:[
+  {label:'(1) '+M('3a(2a+1)'),choices:[M(SP('6a','2')+'&minus;3a'),M(SP('6a','2')+'+a'),M(SP('3a','2')+'+3a'),M(SP('6a','2')+'+3a')],answer:3,expl:'3a×2a+3a×1='+M(SP('6a','2')+'+3a')+'です。'},
+  {label:'(2) '+M('(2x&minus;1)(3x+2)'),choices:[M(SP('6x','2')+'&minus;x&minus;2'),M(SP('6x','2')+'+x&minus;2'),M(SP('6x','2')+'+x+2'),M(SP('6x','2')+'&minus;x+2')],answer:1,expl:'6x²+4x&minus;3x&minus;2='+M(SP('6x','2')+'+x&minus;2')+'です。'},
+  {label:'(3) '+M(SP('(x+2)','2')),choices:[M(SP('x','2')+'+4x+4'),M(SP('x','2')+'+2x+4'),M(SP('x','2')+'+4x+2'),M(SP('x','2')+'+2x+2')],answer:0,expl:'(a+b)²=a²+2ab+b²にa=x、b=2を代入すると'+M(SP('x','2')+'+4x+4')+'です。'},
+  {label:'(4) '+M('(x+3)(x&minus;3)'),choices:[M(SP('x','2')+'&minus;9'),M(SP('x','2')+'+6x&minus;9'),M(SP('x','2')+'+9'),M(SP('x','2')+'&minus;6x+9')],answer:0,expl:'(a+b)(a&minus;b)=a²&minus;b²にa=x、b=3を代入すると'+M(SP('x','2')+'&minus;9')+'です。'},
+  {label:'(5) '+M('(x+3)(x&minus;1)'),choices:[M(SP('x','2')+'&minus;2x&minus;3'),M(SP('x','2')+'+2x+3'),M(SP('x','2')+'+2x&minus;3'),M(SP('x','2')+'&minus;2x+3')],answer:2,expl:'a=3、b=&minus;1として'+M(SP('x','2')+'+2x&minus;3')+'です。'},
+  {label:'(6) '+M('(x+3y)(x+2y)'),choices:[M(SP('x','2')+'+5xy&minus;6'+SP('y','2')),M(SP('x','2')+'&minus;5xy+6'+SP('y','2')),M(SP('x','2')+'+6xy+5'+SP('y','2')),M(SP('x','2')+'+5xy+6'+SP('y','2'))],answer:3,expl:'x²+5xy+6y²='+M(SP('x','2')+'+5xy+6'+SP('y','2'))+'です。'},
+  {label:'(7) '+M(SP('(a+b+c)','2')),choices:[M(SP('a','2')+'+'+SP('b','2')+'+'+SP('c','2')+'+ab+bc+ca'),M(SP('a','2')+'+'+SP('b','2')+'+'+SP('c','2')+'+2ab&minus;2bc+2ca'),M(SP('a','2')+'+'+SP('b','2')+'+'+SP('c','2')),M(SP('a','2')+'+'+SP('b','2')+'+'+SP('c','2')+'+2ab+2bc+2ca')],answer:3,expl:M(SP('(a+b+c)','2'))+'=a²+b²+c²+2ab+2bc+2ca です。'},
+  {label:'(8) '+M(SP('(3x&minus;2)','2')),choices:[M(SP('9x','2')+'&minus;12x+4'),M(SP('9x','2')+'+12x+4'),M(SP('9x','2')+'&minus;12x&minus;4'),M(SP('9x','2')+'+12x&minus;4')],answer:0,expl:'(a&minus;b)²にa=3x、b=2を代入すると'+M(SP('9x','2')+'&minus;12x+4')+'です。'},
+ ]
+},
+{id:'q8',label:'問８',boss:false,heading:'次の式を因数分解せよ。',type:'choice4',
+ subQuestions:[
+  {label:'(1) '+M(SP('3x','2')+'+4x'),choices:[M('3x(x+4)'),M('x(3x&minus;4)'),M('x(3x+4)'),M('3x(x&minus;4)')],answer:2,expl:'共通因数xでくくると'+M('x(3x+4)')+'です。'},
+  {label:'(2) '+M(SP('a','2')+'&minus;16'),choices:[M('(a+4)(a&minus;4)'),M(SP('(a+4)','2')),M(SP('(a&minus;4)','2')),M('(a&minus;8)(a+2)')],answer:0,expl:'a²&minus;4²=(a+4)(a&minus;4)です。'},
+  {label:'(3) '+M(SP('x','2')+'+6x+8'),choices:[M('(x+1)(x+8)'),M('(x+2)(x+4)'),M(SP('(x+2)','2')),M(SP('(x+4)','2'))],answer:1,expl:'積が8、和が6になる2数は2と4。'+M('(x+2)(x+4)')+'です。'},
+  {label:'(4) '+M(SP('a','2')+'&minus;4ab+4'+SP('b','2')),choices:[M(SP('(a+2b)','2')),M(SP('(a&minus;2b)','2')),M('(a+2b)(a&minus;2b)'),M(SP('(a&minus;b)','2'))],answer:1,expl:'(a&minus;2b)²=a²&minus;4ab+4b²です。'},
+  {label:'(5) '+M(SP('2x','2')+'+x&minus;3'),choices:[M('(2x&minus;1)(x+3)'),M('(2x&minus;3)(x+1)'),M('(x&minus;3)(2x+1)'),M('(2x+3)(x&minus;1)')],answer:3,expl:'たすき掛け：(2x+3)(x&minus;1)。確認：2x×(&minus;1)+3×x=+x ✓'},
+  {label:'(6) '+M(SP('3x','2')+'+4xy&minus;4'+SP('y','2')),choices:[M('(3x+2y)(x&minus;2y)'),M('(3x&minus;2y)(x+2y)'),M('(3x&minus;4y)(x+y)'),M('(3x+4y)(x&minus;y)')],answer:1,expl:'たすき掛け：(3x&minus;2y)(x+2y)。確認：3x×2y+(&minus;2y)×x=4xy ✓'},
+ ]
+},
+{id:'q9',label:'問９',boss:false,heading:'次の式を因数分解せよ。',type:'choice4',
+ subQuestions:[
+  {label:'(1) '+M(SP('(x+1)','2')+'&minus;2(x+1)&minus;3'),choices:[M('(x&minus;1)(x+3)'),M('x(x+3)'),M(SP('(x+1)','2')+'&minus;5'),M('(x+2)(x&minus;2)')],answer:3,expl:'A=x+1とおくとA²&minus;2A&minus;3=(A+1)(A&minus;3)=(x+2)(x&minus;2)です。'},
+  {label:'(2) '+M(SP('x','2')+'+2x+1&minus;'+SP('y','2')),choices:[M('(x+y)(x&minus;y+2)'),M('(x&minus;y+1)(x+y&minus;1)'),M('(x+y+1)(x&minus;y+1)'),M('(x+1)(x&minus;y+1)')],answer:2,expl:'(x+1)²&minus;y²=(x+1+y)(x+1&minus;y)=(x+y+1)(x&minus;y+1)です。'},
+  {label:'(3) '+M(SP('a','2')+'+ab&minus;a+b&minus;2'),choices:[M('(a&minus;1)(a+b+2)'),M('(a+1)(a+b&minus;2)'),M('(a+b&minus;1)(a+2)'),M('(a+2)(a+b&minus;2)')],answer:1,expl:'a²+(b&minus;1)a+(b&minus;2)=(a+1)(a+b&minus;2)です。'},
+  {label:'(4) '+M(SP('x','2')+'&minus;xy&minus;2'+SP('y','2')+'+x&minus;5y&minus;2'),choices:[M('(x&minus;y+2)(x+2y&minus;1)'),M('(x+y&minus;1)(x&minus;2y&minus;2)'),M('(x+y+2)(x&minus;2y&minus;1)'),M('(x+2y+2)(x&minus;y&minus;1)')],answer:2,expl:'xの降べき順に整理しtたすき掛けで(x+y+2)(x&minus;2y&minus;1)です。'},
+ ]
+},
+{id:'q10',label:'問１０',boss:false,
+ heading:'7つの数　1、0、'+M(FR('1','3'))+'、'+M(SQ('3'))+'、2.5、'+M('&minus;'+FR('2','3'))+'、&minus;1<br>の中から、自然数・整数・有理数・無理数をすべて選べ。',
+ type:'multi_category',
+ categories:[
+  {label:'自然数をすべて選べ',candidateKeys:['1','0','1/3','√3','2.5','-2/3','-1'],candidates:['1','0',M(FR('1','3')),M(SQ('3')),'2.5',M('&minus;'+FR('2','3')),'&minus;1'],answers:['1'],expl:'自然数は正の整数。1のみです。'},
+  {label:'整数をすべて選べ',candidateKeys:['1','0','1/3','√3','2.5','-2/3','-1'],candidates:['1','0',M(FR('1','3')),M(SQ('3')),'2.5',M('&minus;'+FR('2','3')),'&minus;1'],answers:['1','0','-1'],expl:'整数は…&minus;2、&minus;1、0、1、2…なので1、0、&minus;1です。'},
+  {label:'有理数をすべて選べ',candidateKeys:['1','0','1/3','√3','2.5','-2/3','-1'],candidates:['1','0',M(FR('1','3')),M(SQ('3')),'2.5',M('&minus;'+FR('2','3')),'&minus;1'],answers:['1','0','1/3','2.5','-2/3','-1'],expl:M(SQ('3'))+'以外はすべて有理数です。2.5='+M(FR('5','2'))+'。'},
+  {label:'無理数をすべて選べ',candidateKeys:['1','0','1/3','√3','2.5','-2/3','-1'],candidates:['1','0',M(FR('1','3')),M(SQ('3')),'2.5',M('&minus;'+FR('2','3')),'&minus;1'],answers:['√3'],expl:M(SQ('3'))+'は分数で表せない無理数です。'},
+ ]
+},
+{id:'q11',label:'問１１',boss:false,heading:'次の値を求めよ。',type:'choice4',
+ subQuestions:[
+  {label:'(1) '+M(ABS('3')),choices:[M('&minus;3'),M('9'),M('3'),M(FR('1','3'))],answer:2,expl:'|3|は原点からの距離なので3です。'},
+  {label:'(2) '+M(ABS('&minus;5')),choices:[M('5'),M('&minus;5'),M(FR('1','5')),M('25')],answer:0,expl:'|&minus;5|は符号を取り除いて5です。'},
+  {label:'(3) '+M(ABS('3&minus;1')),choices:[M('&minus;2'),M('4'),M('&minus;4'),M('2')],answer:3,expl:'|3&minus;1|=|2|=2です。'},
+ ]
+},
+{id:'q12',label:'問１２',boss:false,heading:'次の式を計算せよ。',type:'choice4',
+ subQuestions:[
+  {label:'(1) '+M(SQ('3')+'&times;'+SQ('5')),choices:[M(SQ('15')),M(SQ('8')),M(SQ('2')),M('15')],answer:0,expl:M(SQ('3')+'&times;'+SQ('5'))+'='+M(SQ('15'))+'です。'},
+  {label:'(2) '+M(FR(SQ('20'),SQ('4'))),choices:[M(SQ('10')),M('2'+SQ('5')),M(SQ('5')),M('5')],answer:2,expl:M(FR(SQ('20'),SQ('4')))+'='+M(SQ(FR('20','4')))+'='+M(SQ('5'))+'です。'},
+  {label:'(3) '+M(SQ('20')),choices:[M(SQ('20')),M('2'+SQ('5')),M('4'+SQ('5')),M('10')],answer:1,expl:M(SQ('20'))+'='+M(SQ('4&times;5'))+'=2'+M(SQ('5'))+'です。'},
+ ]
+},
+{id:'q13',label:'問１３',boss:true,heading:'次の式を計算せよ。',type:'choice4',
+ subQuestions:[
+  {label:'(1) '+M('4'+SQ('3')+'&minus;3'+SQ('3')),choices:[M('7'+SQ('3')),M(SQ('3')),M('&minus;'+SQ('3')),M('12')],answer:1,expl:'(4&minus;3)'+M(SQ('3'))+'='+M(SQ('3'))+'です。'},
+  {label:'(2) '+M(SQ('2')+'&minus;5'+SQ('2')+'+'+SQ('18')),choices:[M(SQ('2')),M('&minus;'+SQ('2')),M('&minus;3'+SQ('2')),M('3'+SQ('2'))],answer:1,expl:M(SQ('18'))+'=3'+M(SQ('2'))+' なので(1&minus;5+3)'+M(SQ('2'))+'=&minus;'+M(SQ('2'))+'です。'},
+  {label:'(3) '+M('(3+'+SQ('2')+')'+'(1+'+SQ('2')+')'),choices:[M('5&minus;4'+SQ('2')),M('3+4'+SQ('2')),M('5+2'+SQ('2')),M('5+4'+SQ('2'))],answer:3,expl:'3+3'+M(SQ('2'))+'+'+M(SQ('2'))+'+2=5+4'+M(SQ('2'))+'です。'},
+  {label:'(4) '+M(SP('('+SQ('3')+'&minus;'+SQ('5')+')','2')),choices:[M('8+2'+SQ('15')),M('2+2'+SQ('15')),M('8&minus;2'+SQ('15')),M('2&minus;2'+SQ('15'))],answer:2,expl:'3&minus;2'+M(SQ('15'))+'+5=8&minus;2'+M(SQ('15'))+'です。'},
+ ]
+},
+];
+
+// ════════════════════════════════
+// キュー構築（全問を fullQueue に）
+// ════════════════════════════════
+function buildFullQueue(){
+  fullQueue=[];
+  PROBLEMS.forEach((prob,pi)=>{
+    const enemy={...ENEMIES[pi]};
+    const maxHp=enemy.hp;
+    if(prob.type==='select'){
+      const n=prob.subQuestions.length;
+      prob.subQuestions.forEach((sq,si)=>{
+        fullQueue.push({prob,sq,enemy,maxHp,subIdx:si,subTotal:n,dmg:1,type:'select'});
+      });
+    } else if(prob.type==='numpad'){
+      const n=prob.subQuestions.length;
+      prob.subQuestions.forEach((sq,si)=>{
+        fullQueue.push({prob,sq,enemy,maxHp,subIdx:si,subTotal:n,dmg:1,type:'numpad'});
+      });
+    } else if(prob.type==='choice4'){
+      const n=prob.subQuestions.length;
+      prob.subQuestions.forEach((sq,si)=>{
+        const dmg=Math.ceil(maxHp/n);
+        fullQueue.push({prob,sq,enemy,maxHp,subIdx:si,subTotal:n,dmg,type:'choice4'});
+      });
+    } else if(prob.type==='multi_category'){
+      const n=prob.categories.length;
+      prob.categories.forEach((cat,ci)=>{
+        fullQueue.push({prob,cat,enemy,maxHp,subIdx:ci,subTotal:n,dmg:1,type:'multi_category'});
+      });
+    }
+  });
+  const total=fullQueue.length;
+  const firstChunkEnd=calcChunkEnd(0);
+  document.getElementById('questCount').textContent='全 '+total+' 問　（1回 '+firstChunkEnd+'問ずつ）';
+}
+
+// チャンク終端計算（問の途中で切らない）
+function calcChunkEnd(start){
+  const total=fullQueue.length;
+  if(start>=total) return total;
+  let end=Math.min(start+CHUNK_SIZE, total);
+  if(end<total){
+    const endProbId=fullQueue[end].prob.id;
+    if(fullQueue[end-1].prob.id===endProbId){
+      while(end<total && fullQueue[end].prob.id===endProbId) end++;
+    }
+  }
+  return Math.min(end, total);
+}
+
+// セッション（チャンク）開始
+function startChunk(start){
+  chunkStart=start;
+  chunkEnd=calcChunkEnd(start);
+  // チャンク内の敵HPをリセット
+  const seen=new Set();
+  for(let i=chunkStart;i<chunkEnd;i++){
+    const item=fullQueue[i];
+    if(!seen.has(item.prob.id)){
+      seen.add(item.prob.id);
+      item.enemy.hp=item.maxHp;
+    }
+  }
+  queue=fullQueue.slice(chunkStart,chunkEnd);
+  totalQ=queue.length;
+  sessionTotal=totalQ;
+  sessionScore=0;
+  queueIndex=0;
+  score=0; answered=0;
+  heroHp=HERO_MAX;
+  combo=0; coins=0; maxCombo=0; totalCoinsEarned=0; totalHintsUsed=0;
+  document.getElementById('scTot').textContent=totalQ;
+  updateHud();
+}
+
+function buildQueue(){ buildFullQueue(); }
+
+// ════════════════════════════════
+// 画面切替
+// ════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.toggle('hidden', s.id!==id);
+  });
+}
+
+// ════════════════════════════════
+// HUD更新
+// ════════════════════════════════
+function updateHud(){
+  const pct=Math.max(0,heroHp/HERO_MAX*100);
+  const bar=document.getElementById('heroBar');
+  bar.style.width=pct+'%';
+  bar.className='bar-fill hero-bar'+(pct<=25?' low':pct<=50?' mid':'');
+  document.getElementById('heroHpNum').textContent=`HP ${Math.max(0,heroHp)}/${HERO_MAX}`;
+  document.getElementById('scNow').textContent=score;
+  // レベル
+  const lv=getLevel(score);
+  document.getElementById('lvBadge').textContent='Lv.'+lv.lv;
+  document.getElementById('lvTitle').textContent=lv.title;
+  // コンボ
+  const ch=document.getElementById('comboHud');
+  ch.textContent=combo>=2?'🔥 '+combo+' COMBO！':'';
+  // コイン
+  document.getElementById('coinDisp').textContent=coins;
+  const hb=document.getElementById('hintBtn');
+  hb.disabled=(coins<3||hintUsed);
+}
+
+function updateEnemyHud(item){
+  const enemy=item.enemy;
+  document.getElementById('enemyHudName').textContent=enemy.name;
+  const pct=Math.max(0,enemy.hp/item.maxHp*100);
+  document.getElementById('enemyBar').style.width=pct+'%';
+  document.getElementById('enemyHpNum').textContent=`HP ${Math.max(0,enemy.hp)}/${item.maxHp}`;
+}
+
+// ════════════════════════════════
+// バトルログ
+// ════════════════════════════════
+function setLog(html, cls=''){
+  const log=document.getElementById('battleLog');
+  log.innerHTML=`<span class="${cls}">${html}</span>`;
+}
+
+// ════════════════════════════════
+// エフェクト
+// ════════════════════════════════
+function spawnFloat(text,color,x,y){
+  const el=document.createElement('div');
+  el.className='dmg-float';
+  el.style.cssText=`left:${x}px;top:${y}px;color:${color};`;
+  el.textContent=text;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),950);
+}
+function flash(color){
+  const el=document.createElement('div');
+  el.className='flash-overlay';
+  el.style.background=color;
+  document.body.appendChild(el);
+  setTimeout(()=>el.remove(),400);
+}
+
+// ════════════════════════════════
+// コンボバナー
+// ════════════════════════════════
+function showComboBanner(n, mult){
+  const el=document.getElementById('comboBanner');
+  const labels={2:'DOUBLE！',3:'TRIPLE！',4:'GREAT！',5:'AWESOME！'};
+  const label=labels[Math.min(n,5)]||(n+'HIT！');
+  el.textContent=(mult>=3?'🔥🔥🔥 ':mult>=2?'🔥🔥 ':'🔥 ')+n+' COMBO '+label+(mult>1?' ×'+mult+'！':'');
+  el.classList.remove('pop');
+  void el.offsetWidth;
+  el.classList.add('pop');
+}
+
+// ════════════════════════════════
+// 結果画面を表示
+// ════════════════════════════════
+function showResult(isOk, item, explHtml){
+  const enemy=item.enemy;
+  const ri=document.getElementById('resIcon');
+  const rt=document.getElementById('resTitle');
+  const rd=document.getElementById('resDmg');
+  const re=document.getElementById('resExpl');
+
+  if(isOk){
+    ri.textContent='⚔️';
+    rt.className='result-title ok';
+    rt.textContent='攻撃命中！';
+    rd.textContent=`${enemy.name} に ${item.dmg} ダメージ！`
+      +(enemy.hp<=0 ? `\n💥 ${enemy.name} を倒した！` : '');
+  } else {
+    ri.textContent='💢';
+    rt.className='result-title ng';
+    rt.textContent='はんげきを受けた！';
+    rd.textContent=`${enemy.name} の攻撃！ 勇者に ${enemy.atk} ダメージ！`
+      +(heroHp<=0?'\n💀 HPが0になった…':'' );
+  }
+  re.innerHTML=explHtml;
+
+  // 次へボタン
+  const btn=document.getElementById('resNext');
+  btn.onclick=null;
+  btn.onclick=()=>{
+    if(heroHp<=0){ showGameOver(); return; }
+    if(queueIndex>=totalQ){ showClear(); return; }
+    showScreen('battleScreen');
+    loadQuestion(queueIndex);
+  };
+
+  showScreen('resultScreen');
+}
+
+// ════════════════════════════════
+// 1問表示
+// ════════════════════════════════
+function loadQuestion(idx){
+  if(idx>=totalQ){ showClear(); return; }
+  const item=queue[idx];
+  const enemy=item.enemy;
+  const prob=item.prob;
+
+  // 敵ステージ更新
+  const sprite=document.getElementById('enemySprite');
+  const isFirstOfEnemy=(item.subIdx===0);
+  document.getElementById('enemyLv').textContent='Lv.'+enemy.lv;
+  document.getElementById('enemyName').textContent=enemy.name;
+  sprite.textContent=enemy.emoji;
+  if(isFirstOfEnemy){
+    sprite.classList.remove('appear');
+    void sprite.offsetWidth;
+    sprite.classList.add('appear');
+  }
+  updateEnemyHud(item);
+  updateHud();
+
+  // ログ
+  if(isFirstOfEnemy){
+    setLog(`${enemy.emoji} ${enemy.name} があらわれた！`,'log-info');
+  } else {
+    const remaining=enemy.hp;
+    setLog(`${enemy.name} の残りHP: ${remaining} / ${item.maxHp}`,'log-info');
+  }
+
+  // 問題エリア構築
+  const qa=document.getElementById('questionArea');
+  qa.innerHTML='';
+
+  if(prob.boss && item.subIdx===0){
+    const w=document.createElement('div'); w.className='boss-warn';
+    w.textContent='⚠️  BOSS BATTLE！ ⚠️';
+    qa.appendChild(w);
+  }
+
+  // 問題ヘッダー（常に表示）
+  const hEl=document.createElement('div'); hEl.className='q-text';
+  hEl.innerHTML=prob.heading; qa.appendChild(hEl);
+
+  const badge=document.createElement('div'); badge.className='q-badge';
+  badge.textContent=prob.label+' ('+( item.subIdx+1)+'/'+item.subTotal+')';
+  qa.appendChild(badge);
+
+  // ヒントボタン設定（毎問リセット）
+  hintUsed=false;
+  const hb=document.getElementById('hintBtn');
+  hb.disabled=(coins<3);
+  hb.onclick=()=>{
+    if(coins<3||hintUsed) return;
+    coins-=3; totalHintsUsed++; hintUsed=true;
+    hb.disabled=true;
+    updateHud();
+    // choice4 の場合、不正解の選択肢を1つ消す
+    const btns=[...document.querySelectorAll('#questionArea .choice-btn:not(:disabled)')];
+    // 正解以外のボタンを1つdisable（シャッフル済みなので data-correct 属性で管理）
+    const wrong=btns.filter(b=>!b.dataset.correct);
+    if(wrong.length>0){
+      const t=wrong[Math.floor(Math.random()*wrong.length)];
+      t.disabled=true;
+      t.style.opacity='.2';
+    }
+    spawnFloat('-3🪙','#ef4444',hb.getBoundingClientRect().left,hb.getBoundingClientRect().top-10);
+  };
+
+  if(item.type==='select') buildSelect(item, qa);
+  else if(item.type==='numpad') buildNumpad(item, qa);
+  else if(item.type==='choice4') buildChoice4(item, qa);
+  else if(item.type==='multi_category') buildMulti(item, qa);
+}
+
+// ════════════════════════════════
+// 正解処理
+// ════════════════════════════════
+function onCorrect(item, explHtml){
+  const prevLv=getLevel(score);
+  score++;answered++;
+  hintUsed=false;
+
+  // コンボ
+  combo++;
+  if(combo>maxCombo) maxCombo=combo;
+
+  // コイン獲得（コンボボーナス込み）
+  const coinGain = combo>=5?3 : combo>=3?2 : 1;
+  coins+=coinGain;
+  totalCoinsEarned+=coinGain;
+
+  const enemy=item.enemy;
+  // コンボでダメージアップ（最大×3）
+  const comboMult=Math.min(combo,3);
+  const actualDmg=item.dmg*comboMult;
+  enemy.hp=Math.max(0,enemy.hp-actualDmg);
+
+  // スプライトゆれ
+  const sp=document.getElementById('enemySprite');
+  sp.classList.remove('shake','dead');
+  void sp.offsetWidth;
+  if(enemy.hp<=0) sp.classList.add('dead');
+  else sp.classList.add('shake');
+
+  // ダメージ数字
+  const rect=sp.getBoundingClientRect();
+  const dmgColor=comboMult>=3?'#ff3300':comboMult>=2?'#ff8c00':'#ff8c42';
+  spawnFloat('-'+actualDmg,dmgColor,rect.left+rect.width/2,rect.top+rect.height/2);
+  flash('#ff6b3318');
+
+  // コンボバナー
+  if(combo>=2) showComboBanner(combo,comboMult);
+
+  // コイン獲得フロート
+  const barR=document.getElementById('heroBar').getBoundingClientRect();
+  spawnFloat('+'+coinGain+'🪙','#f0c040',barR.right-30,barR.top-20);
+
+  // 解説
+  let fullExpl=explHtml;
+  fullExpl+='<br><span style="color:#f0c040;font-family:var(--px);font-size:.7rem">'
+    +'🪙 +'+coinGain+(coinGain>1?' (コンボボーナス！)':'')+'</span>';
+  if(combo>=2) fullExpl+=' <span style="color:#ff8c42;font-family:var(--px);font-size:.7rem">🔥 '+combo+' COMBO</span>';
+  if(comboMult>1) fullExpl+=' <span style="color:#ff3300;font-family:var(--px);font-size:.7rem">ダメージ×'+comboMult+'！</span>';
+  if(enemy.hp<=0){
+    fullExpl+='<br><span style="color:#f0c040;font-family:var(--px)">⭐ '+enemy.name+'を撃破！<br>'+enemy.reward+'</span>';
+  }
+
+  // レベルアップ判定
+  const newLv=getLevel(score);
+  if(newLv.lv>prevLv.lv){
+    fullExpl+='<br><span style="color:#a855f7;font-family:var(--px)">✨ LEVEL UP！ → '+newLv.title+'</span>';
+  }
+
+  updateEnemyHud(item);
+  updateHud();
+  queueIndex++;
+  setTimeout(()=>showResult(true,item,fullExpl),350);
+}
+
+// ════════════════════════════════
+// 不正解処理
+// ════════════════════════════════
+function onWrong(item, explHtml){
+  answered++;
+  hintUsed=false;
+  combo=0;  // コンボリセット
+  const enemy=item.enemy;
+  heroHp=Math.max(0,heroHp-enemy.atk);
+
+  // 敵攻撃アニメ
+  const sp=document.getElementById('enemySprite');
+  sp.classList.remove('attack');
+  void sp.offsetWidth;
+  sp.classList.add('attack');
+
+  // ダメージ数字（勇者側）
+  const bar=document.getElementById('heroBar');
+  const rect=bar.getBoundingClientRect();
+  spawnFloat('-'+enemy.atk,'#ef4444',rect.left+40,rect.top-16);
+  flash('#ef444422');
+
+  updateHud();
+  queueIndex++;
+  setTimeout(()=>showResult(false,item,explHtml),350);
+}
+
+// ════════════════════════════════
+// SELECT 構築
+// ════════════════════════════════
+function buildSelect(item, qa){
+  const {prob,sq}=item;
+  const lbl=document.createElement('div'); lbl.className='q-text'; lbl.innerHTML=sq.label;
+  qa.appendChild(lbl);
+  const ch=document.createElement('div'); ch.className='choices';
+  const keys=['ア','イ','ウ','エ','オ','カ'];
+  keys.forEach(key=>{
+    const btn=document.createElement('button'); btn.className='choice-btn';
+    btn.innerHTML=`<span class="c-pre">${key}</span>${prob.choiceLabels[key]}`;
+    btn.dataset.key=key;
+    btn.onclick=()=>{
+      ch.querySelectorAll('button').forEach(b=>{
+        b.disabled=true;
+        if(b.dataset.key===sq.answer) b.classList.add('reveal-ok');
+      });
+      const ok=key===sq.answer;
+      btn.classList.add(ok?'sel-ok':'sel-ng');
+      const expl='<b style="color:'+(ok?'#22c55e':'#ef4444')+'">'+(ok?'✅ 正解！':'❌ 不正解')+'</b><br>'+sq.expl;
+      if(ok) onCorrect(item,expl); else onWrong(item,expl);
+    };
+    ch.appendChild(btn);
+  });
+  qa.appendChild(ch);
+}
+
+// ════════════════════════════════
+// NUMPAD 構築
+// ════════════════════════════════
+function buildNumpad(item, qa){
+  const {sq}=item;
+  const lbl=document.createElement('div'); lbl.className='q-text'; lbl.innerHTML=sq.label;
+  qa.appendChild(lbl);
+  const disp=document.createElement('div'); disp.className='num-disp'; disp.innerHTML='&nbsp;';
+  qa.appendChild(disp);
+  let cur='';
+  const pad=document.createElement('div'); pad.className='num-pad';
+  ['7','8','9','4','5','6','1','2','3','0','-','⌫','確定'].forEach(k=>{
+    const btn=document.createElement('button');
+    btn.textContent=k;
+    if(k==='⌫') btn.classList.add('np-del');
+    if(k==='確定') btn.classList.add('np-ok');
+    btn.onclick=()=>{
+      if(k==='⌫'){ cur=cur.slice(0,-1); }
+      else if(k==='確定'){
+        if(!cur) return;
+        pad.querySelectorAll('button').forEach(b=>b.disabled=true);
+        const ok=cur===sq.answer;
+        disp.style.color=ok?'var(--green)':'var(--red)';
+        const expl='<b style="color:'+(ok?'#22c55e':'#ef4444')+'">'+(ok?'✅ 正解！':'❌ 不正解')+'</b><br>'
+          +'正解は <b>'+sq.answer+'</b> です。<br>'+sq.expl;
+        if(ok) onCorrect(item,expl); else onWrong(item,expl);
+        return;
+      } else { cur+=k; }
+      disp.textContent=cur||'';
+    };
+    pad.appendChild(btn);
+  });
+  qa.appendChild(pad);
+}
+
+// ════════════════════════════════
+// CHOICE4 構築
+// ════════════════════════════════
+function buildChoice4(item, qa){
+  const {sq}=item;
+  const lbl=document.createElement('div'); lbl.className='q-text'; lbl.innerHTML=sq.label;
+  qa.appendChild(lbl);
+  const pref=['ア','イ','ウ','エ'];
+  const ch=document.createElement('div'); ch.className='choices';
+
+  // シャッフル（noShuffle フラグがある場合はスキップ）
+  const shuffled=[...sq.choices];
+  const origIdx=shuffled.map((_,i)=>i);
+  if(!sq.noShuffle){
+    for(let i=shuffled.length-1;i>0;i--){
+      const j=Math.floor(Math.random()*(i+1));
+      [shuffled[i],shuffled[j]]=[shuffled[j],shuffled[i]];
+      [origIdx[i],origIdx[j]]=[origIdx[j],origIdx[i]];
+    }
+  }
+  const newAnswer=origIdx.indexOf(sq.answer);
+
+  shuffled.forEach((c,i)=>{
+    const btn=document.createElement('button'); btn.className='choice-btn';
+    btn.innerHTML=`<span class="c-pre">${pref[i]}</span>${c}`;
+    if(i===newAnswer) btn.dataset.correct='1';  // ヒント用フラグ
+    btn.onclick=()=>{
+      ch.querySelectorAll('button').forEach((b,bi)=>{
+        b.disabled=true;
+        if(bi===newAnswer) b.classList.add('reveal-ok');
+      });
+      const ok=i===newAnswer;
+      btn.classList.add(ok?'sel-ok':'sel-ng');
+      const expl='<b style="color:'+(ok?'#22c55e':'#ef4444')+'">'+(ok?'✅ 正解！':'❌ 不正解')+'</b><br>'+sq.expl;
+      if(ok) onCorrect(item,expl); else onWrong(item,expl);
+    };
+    ch.appendChild(btn);
+  });
+  qa.appendChild(ch);
+}
+
+// ════════════════════════════════
+// MULTI_CATEGORY 構築
+// ════════════════════════════════
+function buildMulti(item, qa){
+  const {cat}=item;
+  const lbl=document.createElement('div'); lbl.className='q-text'; lbl.textContent=cat.label;
+  qa.appendChild(lbl);
+  let sel=new Set();
+  const ch=document.createElement('div'); ch.className='choices';
+  cat.candidates.forEach((c,i)=>{
+    const k=cat.candidateKeys[i];
+    const btn=document.createElement('button'); btn.className='choice-btn';
+    btn.innerHTML=c; btn.dataset.key=k;
+    btn.onclick=()=>{
+      if(sel.has(k)){sel.delete(k);btn.classList.remove('toggled');}
+      else{sel.add(k);btn.classList.add('toggled');}
+    };
+    ch.appendChild(btn);
+  });
+  qa.appendChild(ch);
+  const conf=document.createElement('button'); conf.className='multi-conf';
+  conf.textContent='決定';
+  conf.onclick=()=>{
+    conf.disabled=true;
+    ch.querySelectorAll('button').forEach(b=>b.disabled=true);
+    const ansSet=new Set(cat.answers);
+    ch.querySelectorAll('button').forEach(b=>{
+      const k=b.dataset.key;
+      if(ansSet.has(k)) b.classList.add('reveal-ok');
+      if(sel.has(k)&&!ansSet.has(k)) b.classList.add('sel-ng');
+    });
+    const ok=sel.size===ansSet.size&&[...sel].every(k=>ansSet.has(k));
+    const expl='<b style="color:'+(ok?'#22c55e':'#ef4444')+'">'+(ok?'✅ 正解！':'❌ 不正解')+'</b><br>'+cat.expl;
+    if(ok) onCorrect(item,expl); else onWrong(item,expl);
+  };
+  qa.appendChild(conf);
+}
+
+// ════════════════════════════════
+// ゲームオーバー / クリア
+// ════════════════════════════════
+function showGameOver(){
+  document.getElementById('goScore').textContent=`正答数 ${score} / ${totalQ}`;
+  showScreen('gameoverScreen');
+}
+
+function showClear(){
+  const isAllDone=(chunkEnd>=fullQueue.length);
+  const pct=Math.round(score/totalQ*100);
+
+  // タイトル変更
+  const titleEl=document.getElementById('clTitle');
+  if(isAllDone){
+    titleEl.innerHTML='🏆 全問クリア！<br>数式魔王を完全封印した！';
+  } else {
+    const nextChunkEnd=calcChunkEnd(chunkEnd);
+    const remaining=fullQueue.length-chunkEnd;
+    titleEl.innerHTML='🎉 STAGE CLEAR！<br>残り '+remaining+' 問！続きに挑戦しよう！';
+  }
+
+  document.getElementById('clStars').textContent=pct===100?'★★★':pct>=80?'★★☆':'★☆☆';
+  document.getElementById('clScore').textContent=
+    `正答数 ${score} / ${totalQ}　正答率 ${pct}%　最大コンボ ${maxCombo}　獲得🪙 ${totalCoinsEarned}`;
+  document.getElementById('clMsg').innerHTML=
+    (pct===100?'🌟 パーフェクト！すべての敵を完璧に撃破した！':
+     pct>=80  ?'✨ 勇者よ、よくやった！':
+     pct>=60  ?'📚 もう少し！苦手な問題を復習しよう。':
+               '💪 解説を確認して再挑戦しよう！')
+    +'<br>称号：<span style="color:var(--purple)">'+getLevel(score).title+'</span>'
+    +'　残りHP: '+heroHp+' / '+HERO_MAX;
+
+  // 実績バッジ（全問クリア時のみ表示）
+  const area=document.getElementById('badgesArea');
+  area.innerHTML='';
+  if(isAllDone){
+    ACHIEVEMENTS.forEach(a=>{
+      const earned=a.check();
+      const div=document.createElement('div');
+      div.className='badge'+(earned?' earned':'');
+      div.innerHTML=`<span class="badge-icon">${a.icon}</span>`
+        +`<span class="badge-name">${a.name}</span>`
+        +`<span class="badge-desc">${a.desc}</span>`;
+      if(earned){
+        setTimeout(()=>{
+          div.style.transform='scale(1.08)';
+          setTimeout(()=>div.style.transform='',300);
+        },300+Math.random()*400);
+      }
+      area.appendChild(div);
+    });
+  }
+
+  // ボタン切替
+  const nextBtn=document.getElementById('clNextBtn');
+  const retryBtn=document.getElementById('clRetryBtn');
+  if(isAllDone){
+    // 全問クリア → 最初からボタンのみ
+    nextBtn.style.display='none';
+    retryBtn.style.display='';
+    retryBtn.onclick=()=>{
+      // 全リセットして最初のチャンクへ
+      buildFullQueue();
+      startChunk(0);
+      showScreen('battleScreen');
+      loadQuestion(0);
+    };
+  } else {
+    // セッションクリア → 続きへボタン
+    nextBtn.style.display='';
+    retryBtn.style.display='none';
+    nextBtn.onclick=()=>{
+      startChunk(chunkEnd);
+      showScreen('battleScreen');
+      loadQuestion(0);
+    };
+  }
+
+  showScreen('clearScreen');
+}
+
+// ════════════════════════════════
+// スタート
+// ════════════════════════════════
+document.getElementById('startBtn').onclick=()=>{
+  startChunk(0);
+  showScreen('battleScreen');
+  loadQuestion(0);
+};
+
+buildFullQueue();
+</script>
+</body>
+</html>

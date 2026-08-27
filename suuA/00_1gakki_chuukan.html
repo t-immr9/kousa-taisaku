@@ -1,0 +1,1221 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>数学Ａ 中間考査対策 ～集合と場合の数 大冒険～</title>
+<link href="https://fonts.googleapis.com/css2?family=DotGothic16&family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08080f;
+  --card: #12121e;
+  --card2: #1a1a2e;
+  --gold: #f0c040;
+  --blue: #3b82f6;
+  --purple: #a855f7;
+  --green: #22c55e;
+  --red: #ef4444;
+  --text: #e8e8f0;
+  --muted: #8888aa;
+  --border: #2a2a4a;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body {
+  width: 100%; height: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans JP', sans-serif;
+  overflow: hidden;
+}
+.game-font { font-family: 'DotGothic16', monospace; }
+
+/* ===== 星空 ===== */
+#stars {
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  overflow: hidden;
+}
+.star {
+  position: absolute; border-radius: 50%;
+  background: #fff; animation: twinkle 3s infinite;
+}
+@keyframes twinkle {
+  0%,100%{opacity:.3;} 50%{opacity:1;}
+}
+
+/* ===== 画面共通 ===== */
+.screen {
+  position: fixed; inset: 0; z-index: 10;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 16px;
+  transition: opacity 0.4s;
+}
+.screen.hidden { display: none; }
+
+/* ===== タイトル ===== */
+#titleScreen {
+  background: linear-gradient(180deg, #08080f 0%, #0d0d20 100%);
+  text-align: center;
+}
+.title-enemy { font-size: 6rem; animation: float 3s ease-in-out infinite; }
+@keyframes float { 0%,100%{transform:translateY(0);} 50%{transform:translateY(-16px);} }
+.title-main {
+  font-family: 'DotGothic16', monospace;
+  font-size: clamp(1.1rem, 4vw, 1.6rem);
+  color: var(--gold);
+  text-shadow: 0 0 20px rgba(240,192,64,.5);
+  margin: 16px 0 8px;
+  line-height: 1.6;
+}
+.title-sub {
+  font-size: 0.82rem; color: var(--muted); margin-bottom: 32px;
+  font-family: 'DotGothic16', monospace;
+}
+.start-btn {
+  font-family: 'DotGothic16', monospace;
+  font-size: 1.1rem;
+  background: linear-gradient(135deg, var(--gold), #d4a020);
+  color: #08080f; border: none; border-radius: 8px;
+  padding: 14px 48px; cursor: pointer;
+  box-shadow: 0 0 30px rgba(240,192,64,.4);
+  animation: pulse-btn 2s ease-in-out infinite;
+  letter-spacing: 0.1em;
+}
+@keyframes pulse-btn {
+  0%,100%{box-shadow:0 0 30px rgba(240,192,64,.4);}
+  50%{box-shadow:0 0 50px rgba(240,192,64,.8);}
+}
+.start-btn:hover { transform: scale(1.06); }
+
+/* ===== バトル画面 ===== */
+#battleScreen {
+  justify-content: flex-start;
+  padding: 0;
+  overflow: hidden;
+  height: 100dvh;
+}
+.battle-layout {
+  width: 100%; max-width: 480px; margin: 0 auto;
+  display: flex; flex-direction: column;
+  height: 100dvh; overflow: hidden;
+}
+
+/* HUD */
+.hud {
+  background: var(--card);
+  border-bottom: 2px solid var(--border);
+  padding: 8px 12px 6px;
+  flex-shrink: 0;
+}
+.hud-top {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 6px;
+}
+.hud-score {
+  font-family: 'DotGothic16', monospace;
+  color: var(--gold); font-size: 0.82rem;
+}
+.hud-title {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.72rem; color: var(--muted);
+}
+.combo-badge {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.78rem; color: #ff8c00;
+  background: rgba(255,140,0,.15);
+  border: 1px solid #ff8c00;
+  border-radius: 4px; padding: 1px 6px;
+  display: none;
+}
+.combo-badge.show { display: inline-block; }
+.hp-rows { display: flex; flex-direction: column; gap: 4px; }
+.hp-row { display: flex; align-items: center; gap: 6px; }
+.hp-label {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.7rem; min-width: 48px;
+  white-space: nowrap;
+}
+.hp-label.hero { color: var(--green); }
+.hp-label.enemy { color: var(--red); }
+.hp-bar-bg {
+  flex: 1; height: 10px; border-radius: 5px;
+  background: rgba(255,255,255,.1); overflow: hidden;
+}
+.hp-bar-fill {
+  height: 100%; border-radius: 5px;
+  transition: width 0.5s ease;
+}
+.hp-bar-fill.hero { background: linear-gradient(90deg, #15803d, var(--green)); }
+.hp-bar-fill.enemy { background: linear-gradient(90deg, #991b1b, var(--red)); }
+.hp-num {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.68rem; min-width: 36px; text-align: right; color: var(--muted);
+}
+.hud-bottom {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-top: 4px;
+}
+.coin-display {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.75rem; color: var(--gold);
+}
+.hint-btn {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.72rem; background: transparent;
+  border: 1px solid var(--gold); color: var(--gold);
+  border-radius: 4px; padding: 2px 8px; cursor: pointer;
+}
+.hint-btn:disabled { opacity: 0.35; cursor: default; }
+.hint-btn:not(:disabled):hover { background: rgba(240,192,64,.15); }
+
+/* 敵エリア */
+.enemy-area {
+  background: var(--card2);
+  border-bottom: 1px solid var(--border);
+  padding: 8px 12px;
+  flex-shrink: 0;
+  text-align: center;
+  position: relative;
+}
+.enemy-emoji {
+  font-size: 3rem;
+  display: inline-block;
+  transition: transform 0.15s;
+  filter: drop-shadow(0 0 12px rgba(168,85,247,.4));
+}
+.enemy-emoji.shake {
+  animation: enemyShake 0.4s ease;
+}
+.enemy-emoji.attack {
+  animation: enemyAttack 0.4s ease;
+}
+.enemy-emoji.die {
+  animation: enemyDie 0.6s ease forwards;
+}
+@keyframes enemyShake {
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-8px) rotate(-5deg);}
+  40%{transform:translateX(8px) rotate(5deg);}
+  60%{transform:translateX(-5px);}
+  80%{transform:translateX(5px);}
+}
+@keyframes enemyAttack {
+  0%{transform:translateY(0);}
+  30%{transform:translateY(12px) scale(1.1);}
+  100%{transform:translateY(0);}
+}
+@keyframes enemyDie {
+  0%{opacity:1;transform:scale(1);}
+  50%{opacity:.5;transform:scale(1.3) rotate(20deg);}
+  100%{opacity:0;transform:scale(0) rotate(90deg);}
+}
+.enemy-info {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.75rem; color: var(--gold);
+  margin-top: 2px;
+}
+.boss-badge {
+  background: linear-gradient(135deg, #7c3aed, #dc2626);
+  color: #fff; font-size: 0.62rem;
+  padding: 1px 5px; border-radius: 3px;
+  font-family: 'DotGothic16', monospace;
+  margin-left: 4px;
+}
+.skill-acquire {
+  position: absolute; top: 4px; left: 0; right: 0;
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.78rem; color: var(--green);
+  text-align: center;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+.skill-acquire.show { opacity: 1; }
+
+/* バトルログ */
+.battle-log {
+  background: rgba(0,0,0,.4);
+  border-bottom: 1px solid var(--border);
+  padding: 4px 12px;
+  flex-shrink: 0;
+  min-height: 40px;
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  color: var(--muted);
+}
+.log-line { animation: fadeInLog 0.3s ease; }
+@keyframes fadeInLog { from{opacity:0;transform:translateX(-8px);} to{opacity:1;transform:none;} }
+
+/* 問題エリア */
+.question-area {
+  flex: 1; overflow-y: auto;
+  padding: 10px 12px;
+  -webkit-overflow-scrolling: touch;
+}
+.q-section {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.65rem; color: var(--purple);
+  letter-spacing: 0.1em; margin-bottom: 6px;
+}
+.q-num-badge {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.7rem; color: var(--blue);
+  background: rgba(59,130,246,.15);
+  border: 1px solid var(--blue);
+  border-radius: 4px; padding: 1px 8px;
+  display: inline-block; margin-bottom: 8px;
+}
+.q-text {
+  font-size: 0.95rem; line-height: 1.8;
+  margin-bottom: 14px;
+}
+
+/* 選択肢 choice4 */
+.choices4 { display: flex; flex-direction: column; gap: 7px; }
+.choice4-btn {
+  background: var(--card2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 0.9rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+  line-height: 1.5;
+  display: flex; align-items: baseline; gap: 8px;
+}
+.choice4-btn:hover:not(:disabled) {
+  background: rgba(59,130,246,.15);
+  border-color: var(--blue);
+  transform: translateX(3px);
+}
+.choice4-btn.correct-ans {
+  background: rgba(34,197,94,.15);
+  border-color: var(--green);
+  color: var(--green);
+  font-weight: 700;
+}
+.choice4-btn.wrong-ans {
+  background: rgba(239,68,68,.15);
+  border-color: var(--red);
+  color: var(--red);
+}
+.choice4-btn:disabled { cursor: default; transform: none; }
+.choice4-btn.grayed {
+  opacity: 0.3; pointer-events: none;
+}
+.choice-prefix {
+  font-family: 'DotGothic16', monospace;
+  color: var(--gold); font-size: 0.85rem;
+  min-width: 18px;
+}
+
+/* numpad */
+.num-input-area { display: flex; flex-direction: column; gap: 8px; }
+.num-display {
+  background: var(--card2);
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 14px;
+  font-size: 1.3rem;
+  font-family: 'DotGothic16', monospace;
+  min-height: 48px; color: var(--text);
+}
+.num-display.correct-nd { border-color: var(--green); color: var(--green); }
+.num-display.wrong-nd { border-color: var(--red); color: var(--red); }
+.num-pad {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 5px;
+}
+.num-btn {
+  background: var(--card2);
+  border: 1.5px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 0;
+  font-family: 'DotGothic16', monospace;
+  font-size: 1rem;
+  color: var(--text);
+  cursor: pointer;
+  transition: background 0.12s;
+}
+.num-btn:hover:not(:disabled) { background: rgba(59,130,246,.2); border-color: var(--blue); }
+.num-btn.minus-btn { color: #f87171; }
+.num-btn.del-btn { color: #fb923c; }
+.num-btn.ok-btn {
+  grid-column: span 2;
+  background: linear-gradient(135deg, rgba(59,130,246,.3), rgba(168,85,247,.3));
+  border-color: var(--blue);
+  color: #fff;
+  font-weight: bold;
+}
+.num-btn.ok-btn:hover:not(:disabled) { background: rgba(59,130,246,.5); }
+.num-btn:disabled { opacity: 0.35; cursor: default; }
+
+/* 解説 */
+.explanation {
+  display: none;
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  line-height: 1.75;
+}
+.explanation.show { display: block; }
+.explanation.correct-exp {
+  background: rgba(34,197,94,.1);
+  border-left: 3px solid var(--green);
+  color: #86efac;
+}
+.explanation.wrong-exp {
+  background: rgba(239,68,68,.1);
+  border-left: 3px solid var(--red);
+  color: #fca5a5;
+}
+.exp-head {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.88rem;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+.next-btn {
+  margin-top: 10px;
+  width: 100%;
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, rgba(59,130,246,.4), rgba(168,85,247,.4));
+  border: 1.5px solid var(--blue);
+  color: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  cursor: pointer;
+  transition: background 0.15s;
+  letter-spacing: 0.05em;
+}
+.next-btn:hover { background: rgba(59,130,246,.6); }
+
+/* ===== コンボバナー ===== */
+#comboBanner {
+  position: fixed;
+  top: 40%; left: 50%; transform: translate(-50%, -50%);
+  font-family: 'DotGothic16', monospace;
+  font-size: 2rem;
+  color: #ff8c00;
+  text-shadow: 0 0 20px rgba(255,140,0,.8);
+  pointer-events: none; z-index: 100;
+  opacity: 0;
+}
+#comboBanner.show {
+  animation: comboPop 1.2s ease forwards;
+}
+@keyframes comboPop {
+  0%{opacity:0;transform:translate(-50%,-50%) scale(0.5);}
+  20%{opacity:1;transform:translate(-50%,-50%) scale(1.2);}
+  60%{opacity:1;transform:translate(-50%,-50%) scale(1);}
+  100%{opacity:0;transform:translate(-50%,-50%) scale(0.8);}
+}
+
+/* ===== フラッシュ ===== */
+#flash {
+  position: fixed; inset: 0; pointer-events: none; z-index: 200;
+  opacity: 0;
+}
+#flash.flash-green { background: rgba(34,197,94,.25); animation: flashAnim 0.4s; }
+#flash.flash-red { background: rgba(239,68,68,.25); animation: flashAnim 0.4s; }
+@keyframes flashAnim {
+  0%{opacity:1;} 100%{opacity:0;}
+}
+
+/* ===== 結果画面 ===== */
+#resultScreen, #clearScreen, #gameoverScreen {
+  background: linear-gradient(180deg, #08080f 0%, #0d0d20 100%);
+  text-align: center;
+  padding: 24px 20px;
+  overflow-y: auto;
+}
+.result-icon { font-size: 4rem; margin-bottom: 12px; }
+.result-title {
+  font-family: 'DotGothic16', monospace;
+  font-size: 1.4rem;
+  margin-bottom: 8px;
+}
+.result-title.correct { color: var(--green); }
+.result-title.wrong { color: var(--red); }
+.result-exp {
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: #c8c8e0;
+  text-align: left;
+  background: var(--card);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 12px 0 16px;
+  max-width: 440px;
+  width: 100%;
+}
+
+.score-big {
+  font-family: 'DotGothic16', monospace;
+  font-size: 3rem; color: var(--gold);
+  text-shadow: 0 0 20px rgba(240,192,64,.5);
+}
+.score-label { font-size: 0.9rem; color: var(--muted); margin: 4px 0 8px; }
+.rank-title {
+  font-family: 'DotGothic16', monospace;
+  font-size: 1.2rem; color: var(--purple);
+  margin-bottom: 16px;
+}
+.badges-grid {
+  display: flex; flex-wrap: wrap; justify-content: center;
+  gap: 10px; margin: 16px 0;
+}
+.badge {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--card); border-radius: 8px;
+  padding: 10px 12px; border: 2px solid var(--border);
+  font-size: 0.7rem; color: var(--muted);
+  min-width: 70px;
+  font-family: 'DotGothic16', monospace;
+}
+.badge.earned {
+  border-color: var(--gold);
+  color: var(--gold);
+  box-shadow: 0 0 12px rgba(240,192,64,.3);
+}
+.badge-icon { font-size: 1.5rem; margin-bottom: 4px; }
+.retry-btn2 {
+  font-family: 'DotGothic16', monospace;
+  font-size: 1rem;
+  background: linear-gradient(135deg, var(--gold), #d4a020);
+  color: #08080f; border: none; border-radius: 8px;
+  padding: 14px 48px; cursor: pointer;
+  margin-top: 12px;
+  letter-spacing: 0.1em;
+}
+.retry-btn2:hover { transform: scale(1.04); }
+.gameover-msg {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.9rem; color: var(--muted);
+  margin: 12px 0 20px; line-height: 1.6;
+}
+
+/* ===== 続きチャレンジ画面 ===== */
+.continue-box {
+  background: var(--card);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin: 12px 0 16px;
+  max-width: 440px;
+  width: 100%;
+}
+.round-progress {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.75rem; color: var(--blue);
+  background: rgba(59,130,246,.15);
+  border: 1px solid var(--blue);
+  border-radius: 4px; padding: 2px 10px;
+  display: inline-block; margin-bottom: 12px;
+}
+.continue-btn {
+  font-family: 'DotGothic16', monospace;
+  font-size: 1rem;
+  background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+  color: #fff; border: none; border-radius: 8px;
+  padding: 14px 36px; cursor: pointer;
+  margin-top: 8px;
+  letter-spacing: 0.08em;
+  box-shadow: 0 0 20px rgba(59,130,246,.4);
+}
+.continue-btn:hover { transform: scale(1.04); }
+.section-list {
+  font-family: 'DotGothic16', monospace;
+  font-size: 0.72rem; color: var(--muted);
+  text-align: left;
+  line-height: 2;
+  margin: 8px 0;
+}
+</style>
+</head>
+<body>
+
+<!-- 星空 -->
+<div id="stars"></div>
+
+<!-- コンボバナー -->
+<div id="comboBanner"></div>
+<!-- フラッシュ -->
+<div id="flash"></div>
+
+<!-- ===== タイトル画面 ===== -->
+<div class="screen" id="titleScreen">
+  <div class="title-enemy">📚</div>
+  <div class="title-main">数学Ａ　中間考査対策<br>～ 集合と場合の数 大冒険 ～</div>
+  <div class="title-sub">集合 / 場合の数 / 順列 / 組合せ　全44問・3ラウンド制</div>
+  <button class="start-btn" onclick="startGame()">▶ ゲームスタート</button>
+</div>
+
+<!-- ===== バトル画面 ===== -->
+<div class="screen hidden" id="battleScreen">
+  <div class="battle-layout">
+    <!-- HUD -->
+    <div class="hud">
+      <div class="hud-top">
+        <span class="hud-score game-font" id="hudScore">SCORE 0/44</span>
+        <span class="combo-badge game-font" id="comboBadge">🔥 COMBO x1</span>
+        <span class="coin-display" id="coinDisplay">🪙 0</span>
+      </div>
+      <div class="hp-rows">
+        <div class="hp-row">
+          <span class="hp-label hero game-font">勇者HP</span>
+          <div class="hp-bar-bg"><div class="hp-bar-fill hero" id="heroHpBar" style="width:100%"></div></div>
+          <span class="hp-num game-font" id="heroHpNum">88/88</span>
+        </div>
+        <div class="hp-row">
+          <span class="hp-label enemy game-font">敵　HP</span>
+          <div class="hp-bar-bg"><div class="hp-bar-fill enemy" id="enemyHpBar" style="width:100%"></div></div>
+          <span class="hp-num game-font" id="enemyHpNum">5/5</span>
+        </div>
+      </div>
+      <div class="hud-bottom">
+        <span class="hud-title game-font" id="hudTitle">LEVEL 1</span>
+        <button class="hint-btn" id="hintBtn" onclick="useHint()">💡 ヒント (3🪙)</button>
+      </div>
+    </div>
+
+    <!-- 敵エリア -->
+    <div class="enemy-area">
+      <div class="skill-acquire game-font" id="skillAcquire"></div>
+      <div class="enemy-emoji" id="enemyEmoji">🟢</div>
+      <div class="enemy-info game-font" id="enemyInfo">公式スライム王 Lv1</div>
+    </div>
+
+    <!-- バトルログ -->
+    <div class="battle-log" id="battleLog">
+      <div class="log-line">⚔️ バトル開始！数学の敵を倒せ！</div>
+    </div>
+
+    <!-- 問題エリア -->
+    <div class="question-area" id="questionArea"></div>
+  </div>
+</div>
+
+<!-- ===== 結果画面（1問ごと） ===== -->
+<div class="screen hidden" id="resultScreen">
+  <div class="result-icon" id="resultIcon">✅</div>
+  <div class="result-title" id="resultTitle">正解！</div>
+  <div class="result-exp" id="resultExp"></div>
+  <button class="next-btn" onclick="nextQuestion()">▶ 次へ進む</button>
+</div>
+
+<!-- ===== クリア画面 ===== -->
+<div class="screen hidden" id="clearScreen">
+  <div style="max-width:440px;width:100%">
+    <div style="font-size:3rem;margin-bottom:8px">🎊</div>
+    <div style="font-family:'DotGothic16',monospace;font-size:1.3rem;color:var(--gold);margin-bottom:4px">全問クリア！！</div>
+    <div class="score-big" id="clearScore">44</div>
+    <div class="score-label" id="clearLabel">/ 44 問正解</div>
+    <div class="rank-title" id="clearRank">🏆 伝説の数学者</div>
+    <div class="badges-grid" id="badgesGrid"></div>
+    <button class="retry-btn2" onclick="restartGame()">▶ もう一度（最初から）</button>
+  </div>
+</div>
+
+<!-- ===== ラウンドクリア画面（続き） ===== -->
+<div class="screen hidden" id="roundClearScreen">
+  <div style="max-width:440px;width:100%">
+    <div style="font-size:3rem;margin-bottom:8px">⭐</div>
+    <div style="font-family:'DotGothic16',monospace;font-size:1.3rem;color:var(--gold);margin-bottom:8px">ラウンドクリア！</div>
+    <div class="round-progress" id="roundProgress">ROUND 1 / 3</div>
+    <div class="continue-box">
+      <div class="score-big" id="roundScore">10</div>
+      <div class="score-label" id="roundLabel">/ 12 問正解</div>
+      <div style="font-size:0.82rem;color:var(--muted);margin:8px 0;font-family:'DotGothic16',monospace">次のラウンドのセクション：</div>
+      <div class="section-list" id="nextSectionList"></div>
+    </div>
+    <div class="badges-grid" id="roundBadgesGrid"></div>
+    <button class="continue-btn" onclick="continueGame()">▶ 続きに挑戦！</button>
+    <br>
+    <button class="retry-btn2" style="margin-top:10px;font-size:0.85rem;padding:10px 24px;" onclick="restartGame()">▶ 最初からやり直す</button>
+  </div>
+</div>
+
+<!-- ===== ゲームオーバー画面 ===== -->
+<div class="screen hidden" id="gameoverScreen">
+  <div style="max-width:440px;width:100%">
+    <div style="font-size:3rem;margin-bottom:8px">💀</div>
+    <div style="font-family:'DotGothic16',monospace;font-size:1.3rem;color:var(--red);margin-bottom:8px">GAME OVER</div>
+    <div class="gameover-msg" id="gameoverMsg">勇者は力尽きた…</div>
+    <div class="score-big" id="gameoverScore">0</div>
+    <div class="score-label">問正解</div>
+    <button class="retry-btn2" onclick="restartGame()">▶ もう一度</button>
+  </div>
+</div>
+
+<script>
+// ===== 星空生成 =====
+(function(){
+  const s = document.getElementById('stars');
+  for(let i=0;i<80;i++){
+    const d = document.createElement('div');
+    d.className = 'star';
+    const sz = Math.random()*2.5+0.5;
+    d.style.cssText = `width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;animation-delay:${Math.random()*3}s;animation-duration:${2+Math.random()*3}s;`;
+    s.appendChild(d);
+  }
+})();
+
+// ===== 敵データ =====
+const ENEMIES = [
+  { section:"集合の基本", name:"∩スライム王", emoji:"🟢", lv:1, hp:5, atk:2, reward:"集合の基本を習得！" },
+  { section:"集合の要素の個数", name:"数え上げゴースト", emoji:"👻", lv:2, hp:4, atk:3, reward:"要素の個数を習得！" },
+  { section:"包除原理", name:"重複の悪魔", emoji:"😈", lv:3, hp:3, atk:3, reward:"包除原理を習得！" },
+  { section:"倍数の個数", name:"倍数ウォリアー", emoji:"⚔️", lv:4, hp:3, atk:4, reward:"倍数カウントを習得！" },
+  { section:"約数の個数", name:"約数ガーゴイル", emoji:"🗿", lv:5, hp:3, atk:4, reward:"約数の個数を習得！" },
+  { section:"順列", name:"順列ドラゴン", emoji:"🐉", lv:6, hp:4, atk:5, reward:"順列をマスター！" },
+  { section:"並べ方", name:"配列の精霊", emoji:"✨", lv:7, hp:5, atk:5, reward:"並べ方を習得！" },
+  { section:"条件付き並べ方", name:"条件騎士", emoji:"🛡️", lv:8, hp:2, atk:5, reward:"条件付き並べ方を習得！" },
+  { section:"円順列", name:"円環の魔法使い", emoji:"🔮", lv:9, hp:2, atk:5, reward:"円順列を習得！" },
+  { section:"組合せ", name:"組合せの賢者", emoji:"🦉", lv:10, hp:4, atk:6, reward:"組合せをマスター！" },
+  { section:"組合せの応用", name:"応用の番人", emoji:"🏰", lv:11, hp:5, atk:6, reward:"組合せ応用を制覇！" },
+  { section:"整数の作り方", name:"数字錬金術師", emoji:"⚗️", lv:12, hp:2, atk:6, reward:"整数の作り方を習得！" },
+  { section:"範囲内の倍数", name:"数式大魔王", emoji:"👑", lv:13, hp:2, atk:7, boss:true, reward:"数式大魔王を討伐！" },
+];
+
+// ===== 問題データ =====
+const QUESTIONS = [
+  // 集合の基本
+  { section:"集合の基本", type:"choice4", text:"A = {1, 3, 5, 9, 15}，B = {1, 2, 3, 6, 9, 18} のとき，A ∩ B を求めよ。", choices:["{1, 3, 9}","{1, 2, 3, 5, 6, 9, 15, 18}","{5, 15}","{2, 6, 18}"], answer:0, exp:"A ∩ B は A と B 両方に属する要素の集合です。A にも B にも属するのは 1, 3, 9 です。" },
+  { section:"集合の基本", type:"choice4", text:"A = {1, 3, 5, 9, 15}，B = {1, 2, 3, 6, 9, 18} のとき，A ∪ B を求めよ。", choices:["{1, 2, 3, 5, 6, 9, 15, 18}","{1, 3, 9}","{5, 15, 2, 6, 18}","{1, 3, 5, 9}"], answer:0, exp:"A ∪ B は A または B の少なくとも一方に属する要素の集合。すべて合わせて重複を除くと {1, 2, 3, 5, 6, 9, 15, 18} になります。" },
+  { section:"集合の基本", type:"choice4", text:"全体集合 U = {1, 2, 3, 4, 5, 6, 7, 8, 9}，A = {2, 4, 6, 8} のとき，A の補集合 Ā を求めよ。", choices:["{1, 3, 5, 7, 9}","{2, 4, 6, 8}","{1, 2, 3, 4, 5}","{3, 5, 7}"], answer:0, exp:"補集合 Ā は U の中で A に属さない要素の集合です。U から偶数を除くと {1, 3, 5, 7, 9} になります。" },
+  { section:"集合の基本", type:"choice4", text:"U = {1, 2, …, 10}，A = {1, 4, 6, 9}，B = {3, 4, 7, 9, 10} のとき，Ā ∩ B を求めよ。", choices:["{3, 7, 10}","{4, 9}","{1, 6}","{3, 4, 7, 9, 10}"], answer:0, exp:"Ā = {2, 3, 5, 7, 8, 10}。Ā ∩ B は Ā と B の共通部分なので {3, 7, 10} です。" },
+  { section:"集合の基本", type:"choice4", text:"U = {1, 2, …, 12}，A = 偶数，B = 3の倍数 のとき，A ∩ B̄ はどれか。", choices:["{2, 4, 8, 10}","{6, 12}","{3, 9}","{2, 4, 6, 8, 10, 12}"], answer:0, exp:"B̄ は 3 の倍数でない数全体。A ∩ B̄ は「偶数かつ 3 の倍数でない」数なので {2, 4, 8, 10} です。" },
+  // 集合の要素の個数
+  { section:"集合の要素の個数", type:"numpad", text:"1 けたの自然数のうち，3 の倍数全体の集合の要素の個数を求めよ。", answer:"3", exp:"1 けたの自然数の 3 の倍数は 3, 6, 9 の 3 個です。" },
+  { section:"集合の要素の個数", type:"numpad", text:"50 以下の自然数のうち，8 の倍数全体の集合の要素の個数を求めよ。", answer:"6", exp:"50 ÷ 8 = 6.25 なので，床関数をとり 6 個。8, 16, 24, 32, 40, 48 の 6 個です。" },
+  { section:"集合の要素の個数", type:"numpad", text:"100 以下の自然数のうち，9 の倍数全体の集合の要素の個数を求めよ。", answer:"11", exp:"100 ÷ 9 = 11.1… なので 11 個。9×1=9 から 9×11=99 までの 11 個です。" },
+  { section:"集合の要素の個数", type:"choice4", text:"2 けたの自然数のうち，5 の倍数全体の集合の要素の個数として正しいものはどれか。", choices:["17 個","18 個","20 個","16 個"], answer:1, exp:"2 けたの 5 の倍数は 10, 15, 20, …, 95。個数は (95−10)÷5 + 1 = 18 個です。", noShuffle:true },
+  // 包除原理
+  { section:"包除原理", type:"numpad", text:"50 人のクラスで，数学が好きな人は 24 人，英語が好きな人は 18 人，どちらも好きな人は 7 人いた。どちらも好きでない人は何人か。", answer:"15", exp:"数学または英語が好きな人 = 24+18−7 = 35 人。どちらも好きでない人 = 50−35 = 15 人です。" },
+  { section:"包除原理", type:"numpad", text:"35 人のクラスで，バスを使う人は 16 人，電車を使う人は 14 人，バスも電車も使う人は 5 人いた。バスを使わない人は何人か。", answer:"19", exp:"バスを使わない人 = 35−16 = 19 人です。（電車の情報は使いません）" },
+  { section:"包除原理", type:"choice4", text:"45 人のクラスで，スマホを持っている人は 30 人，タブレットを持っている人は 20 人，どちらも持っている人は 8 人いた。どちらかを持っている人は何人か。", choices:["50 人","38 人","42 人","44 人"], answer:2, exp:"n(A ∪ B) = 30+20−8 = 42 人です。", noShuffle:true },
+  // 倍数の個数
+  { section:"倍数の個数", type:"numpad", text:"200 以下の自然数のうち，3 の倍数かつ 5 の倍数は何個あるか。", answer:"13", exp:"200 以下の 15 の倍数：200÷15=13 あまり 5 なので 13 個です。" },
+  { section:"倍数の個数", type:"numpad", text:"200 以下の自然数のうち，3 の倍数または 5 の倍数は何個あるか。", answer:"93", exp:"3の倍数：66個，5の倍数：40個，15の倍数：13個。包除原理より 66+40−13 = 93 個です。" },
+  { section:"倍数の個数", type:"choice4", text:"400 以下の自然数のうち，6 の倍数かつ 9 の倍数は何個あるか。", choices:["18 個","24 個","20 個","22 個"], answer:3, exp:"6と9の最小公倍数は 18 なので，18の倍数の個数を求めます。400÷18=22 あまり 4 より 22 個です。", noShuffle:true },
+  // 約数の個数
+  { section:"約数の個数", type:"numpad", text:"240 の正の約数の個数を求めよ。", answer:"20", exp:"240 = 2⁴ × 3 × 5。約数の個数は (4+1)×(1+1)×(1+1) = 5×2×2 = 20 個です。" },
+  { section:"約数の個数", type:"choice4", text:"180 の正の約数の個数として正しいものはどれか。", choices:["12 個","18 個","24 個","16 個"], answer:1, exp:"180 = 2² × 3² × 5。約数の個数は (2+1)×(2+1)×(1+1) = 3×3×2 = 18 個です。", noShuffle:true },
+  { section:"約数の個数", type:"numpad", text:"504 の正の約数の個数を求めよ。", answer:"24", exp:"504 = 2³ × 3² × 7。約数の個数は (3+1)×(2+1)×(1+1) = 4×3×2 = 24 個です。" },
+  // 順列
+  { section:"順列", type:"numpad", text:"₈P₃ の値を求めよ。", answer:"336", exp:"₈P₃ = 8×7×6 = 336 です。" },
+  { section:"順列", type:"numpad", text:"₅P₅ の値を求めよ。", answer:"120", exp:"₅P₅ = 5! = 5×4×3×2×1 = 120 です。" },
+  { section:"順列", type:"numpad", text:"₉P₁ の値を求めよ。", answer:"9", exp:"ₙP₁ = n なので ₉P₁ = 9 です。" },
+  { section:"順列", type:"choice4", text:"₆P₂ の値として正しいものはどれか。", choices:["15","36","30","720"], answer:2, exp:"₆P₂ = 6×5 = 30 です。", noShuffle:true },
+  // 並べ方
+  { section:"並べ方", type:"numpad", text:"5 個の文字 a, b, c, d, e から異なる 3 文字を選んで 1 列に並べるとき，並べ方は何通りあるか。", answer:"60", exp:"₅P₃ = 5×4×3 = 60 通りです。" },
+  { section:"並べ方", type:"choice4", text:"7 枚のカード a a b b c d e から 2 枚を選んで 1 列に並べるとき，並べ方は何通りあるか。", choices:["21 通り","18 通り","22 通り","23 通り"], answer:2, exp:"【場合分け】①同じ文字を2枚選ぶ：aa または bb → 並べ方はそれぞれ1通りずつで 2通り。②異なる文字を2枚選ぶ：a,b,c,d,e の5種類から2種類選んで並べる → ₅P₂ = 5×4 = 20通り。合計 2 + 20 = 22通り。", noShuffle:true },
+  { section:"並べ方", type:"numpad", text:"5 個の文字 a, b, c, d, e をすべて使って 1 列に並べるとき，a が先頭になる並べ方は何通りあるか。", answer:"24", exp:"a を先頭に固定して，残り 4 文字を並べる → 4! = 24 通りです。" },
+  { section:"並べ方", type:"choice4", text:"大小 2 個のさいころを投げるとき，目の和が 7 または 11 になる場合は何通りあるか。", choices:["6 通り","9 通り","7 通り","8 通り"], answer:3, exp:"和が 7: 6通り，和が 11: 2通り。合計 6+2 = 8 通りです。", noShuffle:true },
+  { section:"並べ方", type:"choice4", text:"大小 2 個のさいころを投げるとき，目の和が 9 以上の偶数になる場合は何通りあるか。", choices:["6 通り","4 通り","3 通り","5 通り"], answer:1, exp:"9以上の偶数 = 10, 12。和が10: 3通り，和が12: 1通り。合計 4 通りです。", noShuffle:true },
+  // 条件付き並べ方
+  { section:"条件付き並べ方", type:"numpad", text:"男子 3 人，女子 3 人が 1 列に並ぶとき，男子 3 人が続いて並ぶ並べ方は何通りあるか。", answer:"144", exp:"男子 3 人をひとかたまりと考えると，4 つの塊の並べ方 4! = 24 通り。男子の内部 3! = 6 通り。24×6 = 144 通りです。" },
+  { section:"条件付き並べ方", type:"choice4", text:"男子 3 人，女子 3 人が 1 列に並ぶとき，女子 3 人が互いに隣り合わない並べ方は何通りあるか。", choices:["72 通り","36 通り","144 通り","120 通り"], answer:2, exp:"まず男子 3 人を並べる：3! = 6 通り。男子の間と両端の 4 か所から 3 か所選んで女子を並べる：₄P₃ = 24 通り。6×24 = 144 通りです。", noShuffle:true },
+  // 円順列
+  { section:"円順列", type:"numpad", text:"6 人が円形のテーブルの周りに座るとき，座り方は何通りあるか。", answer:"120", exp:"円順列は (n−1)! なので (6−1)! = 5! = 120 通りです。" },
+  { section:"円順列", type:"choice4", text:"A, B を含む 5 人が円形に座るとき，A と B が隣り合う座り方は何通りあるか。", choices:["24 通り","6 通り","48 通り","12 通り"], answer:3, exp:"A, B をひとかたまりにして 4 つの塊の円順列：(4−1)! = 6 通り。A, B の内部：2! = 2 通り。6×2 = 12 通りです。", noShuffle:true },
+  // 組合せ
+  { section:"組合せ", type:"numpad", text:"₆C₂ の値を求めよ。", answer:"15", exp:"₆C₂ = 6×5 ÷ (2×1) = 15 です。" },
+  { section:"組合せ", type:"numpad", text:"₁₀C₈ の値を求めよ。", answer:"45", exp:"₁₀C₈ = ₁₀C₂ = 10×9÷2 = 45 です。" },
+  { section:"組合せ", type:"numpad", text:"₇C₇ の値を求めよ。", answer:"1", exp:"ₙCₙ = 1 です。すべてを選ぶ方法は 1 通りしかありません。" },
+  { section:"組合せ", type:"choice4", text:"₈C₃ の値として正しいものはどれか。", choices:["24","56","336","40320"], answer:1, exp:"₈C₃ = 8×7×6 ÷ (3×2×1) = 336÷6 = 56 です。", noShuffle:true },
+  // 組合せの応用
+  { section:"組合せの応用", type:"numpad", text:"6 人の中から 4 人の委員を選ぶとき，選び方は何通りあるか。", answer:"15", exp:"₆C₄ = ₆C₂ = 15 通りです。" },
+  { section:"組合せの応用", type:"numpad", text:"10 色の絵の具から 3 色を選ぶとき，選び方は何通りあるか。", answer:"120", exp:"₁₀C₃ = 10×9×8÷(3×2×1) = 120 通りです。" },
+  { section:"組合せの応用", type:"choice4", text:"正八角形の 8 個の頂点のうち，3 点を結んでできる三角形は何個あるか。", choices:["48 個","40 個","56 個","64 個"], answer:2, exp:"8 個の頂点から 3 点を選べばすべて三角形になります。₈C₃ = 56 個です。", noShuffle:true },
+  { section:"組合せの応用", type:"choice4", text:"10 冊の異なる本を A, B の 2 人に 5 冊ずつ分けるとき，分け方は何通りあるか。", choices:["120 通り","3628800 通り","504 通り","252 通り"], answer:3, exp:"A に渡す 5 冊を選べばよいので ₁₀C₅ = 252 通りです。", noShuffle:true },
+  { section:"組合せの応用", type:"choice4", text:"9 冊の異なる本を 3 冊ずつ 3 組に分けるとき（組の区別なし），分け方は何通りあるか。", choices:["1680 通り","280 通り","840 通り","504 通り"], answer:1, exp:"区別ありの場合 ₉C₃×₆C₃×₃C₃ = 1680 通り。区別なしなので 3! で割る → 1680÷6 = 280 通りです。", noShuffle:true },
+  // 整数の作り方
+  { section:"整数の作り方", type:"numpad", text:"数字 1, 2, 3, 4, 5 から異なる 3 つの数字を使ってできる 3 桁の整数は何個あるか。", answer:"60", exp:"₅P₃ = 5×4×3 = 60 個です。" },
+  { section:"整数の作り方", type:"choice4", text:"数字 1, 2, 3, 4, 5 から異なる 3 つの数字を使ってできる 3 桁の偶数は何個あるか。", choices:["30 個","12 個","24 個","48 個"], answer:2, exp:"一の位が偶数（2 か 4）→ 2通り。残り 4 数字から 2 つを選んで並べる：₄P₂ = 12通り。合計 2×12 = 24 個です。", noShuffle:true },
+  // 範囲内の倍数
+  { section:"範囲内の倍数", type:"numpad", text:"50 から 200 までの自然数のうち，5 の倍数は何個あるか。", answer:"31", exp:"200 までの 5 の倍数：40個，49 までの 5 の倍数：9個。よって 40−9 = 31 個です。" },
+  { section:"範囲内の倍数", type:"numpad", text:"100 から 400 までの自然数のうち，4 の倍数または 6 の倍数は何個あるか。", answer:"101", exp:"4の倍数：76個，6の倍数：50個，12の倍数（lcm）：25個。包除原理より 76+50−25=101 個です。" },
+];
+
+// Fisher-Yates シャッフル
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+// ===== ラウンド設定 =====
+const ROUND_SIZE = 12; // 1ラウンドの問題数（10〜15の範囲）
+
+function buildRounds(allQs) {
+  // 問題数に応じて均等にラウンド分割（各ラウンド10〜15問）
+  const total = allQs.length;
+  const numRounds = Math.ceil(total / ROUND_SIZE);
+  const rounds = [];
+  let idx = 0;
+  for(let r = 0; r < numRounds; r++){
+    // 最後のラウンドに問題が余らないよう均等配分
+    const remaining = total - idx;
+    const roundsLeft = numRounds - r;
+    const size = Math.ceil(remaining / roundsLeft);
+    rounds.push(allQs.slice(idx, idx + size));
+    idx += size;
+  }
+  return rounds;
+}
+
+// ===== ゲーム状態 =====
+const HERO_MAX_HP = 88;
+let state = {};
+let allRounds = [];    // 全ラウンド問題
+let currentRound = 0;  // 現在のラウンドインデックス
+let totalScore = 0;    // 全ラウンド累計スコア
+
+function prepareAllQuestions(){
+  return QUESTIONS.map((q,i)=>{
+    if(q.type==='choice4' && !q.noShuffle){
+      const correctText = q.choices[q.answer];
+      const shuffled = shuffle([...q.choices]);
+      const newAns = shuffled.indexOf(correctText);
+      return {...q, choices:shuffled, answer:newAns, _idx:i};
+    }
+    return {...q, _idx:i};
+  });
+}
+
+function initState(qs){
+  state = {
+    qs,
+    qIdx: 0,
+    heroHp: HERO_MAX_HP,
+    coins: 5,
+    score: 0,
+    combo: 0,
+    maxCombo: 0,
+    hintUsedThisQ: false,
+    noHintUsed: true,
+    noHit: true,
+    coinsEarned: 0,
+    numBuf: '',
+    phase: 'question',
+    lastCorrect: false,
+    enemyHpMap: buildEnemyHpMap(qs),
+  };
+}
+
+function buildEnemyHpMap(qs){
+  // セクションごとに問題数カウント
+  const map = {};
+  qs.forEach(q=>{
+    const e = ENEMIES.find(e=>e.section===q.section);
+    if(!e) return;
+    if(!map[q.section]) map[q.section]={ enemy:e, hp:e.hp, maxHp:e.hp };
+  });
+  return map;
+}
+
+function currentEnemy(){
+  const q = state.qs[state.qIdx];
+  return state.enemyHpMap[q.section];
+}
+
+// ===== 画面切替 =====
+function showScreen(id){
+  ['titleScreen','battleScreen','resultScreen','clearScreen','roundClearScreen','gameoverScreen'].forEach(s=>{
+    document.getElementById(s).classList.toggle('hidden', s!==id);
+  });
+}
+
+function startGame(){
+  // 全問題を準備してラウンド分割
+  const allQs = prepareAllQuestions();
+  allRounds = buildRounds(allQs);
+  currentRound = 0;
+  totalScore = 0;
+  startRound();
+}
+
+function startRound(){
+  initState(allRounds[currentRound]);
+  showScreen('battleScreen');
+  // バトルログリセット
+  const log = document.getElementById('battleLog');
+  log.innerHTML = `<div class="log-line">⚔️ ROUND ${currentRound+1} / ${allRounds.length} スタート！</div>`;
+  renderQuestion();
+  updateHUD();
+}
+
+function continueGame(){
+  currentRound++;
+  if(currentRound >= allRounds.length){
+    // 全ラウンド完了 → 最初から
+    restartGame();
+    return;
+  }
+  startRound();
+}
+
+function restartGame(){
+  showScreen('titleScreen');
+}
+
+// ===== HUD更新 =====
+function updateHUD(){
+  const q = state.qs[state.qIdx];
+  const total = state.qs.length;
+  document.getElementById('hudScore').textContent = `R${currentRound+1} SCORE ${state.score}/${total}`;
+  document.getElementById('coinDisplay').textContent = `🪙 ${state.coins}`;
+
+  // 勇者HP
+  const heroRatio = Math.max(0, state.heroHp / HERO_MAX_HP * 100);
+  document.getElementById('heroHpBar').style.width = heroRatio + '%';
+  document.getElementById('heroHpNum').textContent = `${Math.max(0,state.heroHp)}/${HERO_MAX_HP}`;
+
+  // 敵HP
+  const eInfo = currentEnemy();
+  if(eInfo){
+    const eRatio = Math.max(0, eInfo.hp / eInfo.maxHp * 100);
+    document.getElementById('enemyHpBar').style.width = eRatio + '%';
+    document.getElementById('enemyHpNum').textContent = `${Math.max(0,eInfo.hp)}/${eInfo.maxHp}`;
+    const e = eInfo.enemy;
+    document.getElementById('enemyEmoji').textContent = e.emoji;
+    document.getElementById('enemyInfo').innerHTML = `${e.name} Lv${e.lv}${e.boss?'<span class="boss-badge">BOSS</span>':''}`;
+  }
+
+  // コンボ
+  const cb = document.getElementById('comboBadge');
+  if(state.combo >= 2){
+    cb.textContent = `🔥 COMBO ×${state.combo}`;
+    cb.classList.add('show');
+  } else {
+    cb.classList.remove('show');
+  }
+
+  // レベル
+  const lv = Math.floor(state.score/5)+1;
+  const ranks = ['見習い冒険者','冒険者','熟練者','上級者','エキスパート','マスター','伝説の数学者'];
+  const rankIdx = Math.min(Math.floor(state.score/(state.qs.length/7)), ranks.length-1);
+  document.getElementById('hudTitle').textContent = `Lv${lv} ${ranks[rankIdx]}`;
+
+  // ヒントボタン
+  const hb = document.getElementById('hintBtn');
+  hb.disabled = state.hintUsedThisQ || state.coins < 3 || state.qs[state.qIdx].type==='numpad';
+}
+
+// ===== 問題描画 =====
+function renderQuestion(){
+  const qa = document.getElementById('questionArea');
+  qa.innerHTML = '';
+  const q = state.qs[state.qIdx];
+  const total = state.qs.length;
+  state.hintUsedThisQ = false;
+  state.numBuf = '';
+
+  qa.innerHTML = `
+    <div class="q-section">${q.section}</div>
+    <div class="q-num-badge">問 ${state.qIdx+1} / ${total}</div>
+    <div class="q-text">${q.text}</div>
+    <div id="inputArea"></div>
+    <div class="explanation" id="expArea"></div>
+  `;
+
+  if(q.type==='choice4'){
+    const prefixes = ['ア','イ','ウ','エ'];
+    const html = q.choices.map((c,i)=>
+      `<button class="choice4-btn" onclick="selectChoice(${i})" id="cb${i}">
+        <span class="choice-prefix">${prefixes[i]}</span><span>${c}</span>
+      </button>`
+    ).join('');
+    document.getElementById('inputArea').innerHTML = `<div class="choices4">${html}</div>`;
+  } else {
+    document.getElementById('inputArea').innerHTML = `
+      <div class="num-input-area">
+        <div class="num-display" id="numDisplay">　</div>
+        <div class="num-pad">
+          ${[7,8,9,'−',4,5,6,'⌫',1,2,3,'',0,'','','確定'].map((n,i)=>
+            n===''?`<div></div>`:
+            n==='確定'?`<button class="num-btn ok-btn" id="okBtn" onclick="submitNum()">確定</button>`:
+            n==='⌫'?`<button class="num-btn del-btn" onclick="numDel()">⌫</button>`:
+            n==='−'?`<button class="num-btn minus-btn" onclick="numPress('−')">−</button>`:
+            `<button class="num-btn" onclick="numPress('${n}')">${n}</button>`
+          ).join('')}
+        </div>
+      </div>`;
+  }
+  updateHUD();
+}
+
+function numPress(n){
+  if(state.phase!=='question') return;
+  if(n==='−'){
+    if(state.numBuf.startsWith('−')) state.numBuf=state.numBuf.slice(1);
+    else state.numBuf='−'+state.numBuf;
+  } else {
+    if(state.numBuf.length < 8) state.numBuf += String(n);
+  }
+  const nd = document.getElementById('numDisplay');
+  if(nd) nd.textContent = state.numBuf || '　';
+}
+
+function numDel(){
+  if(state.phase!=='question') return;
+  state.numBuf = state.numBuf.slice(0,-1);
+  const nd = document.getElementById('numDisplay');
+  if(nd) nd.textContent = state.numBuf || '　';
+}
+
+function submitNum(){
+  if(state.phase!=='question') return;
+  const q = state.qs[state.qIdx];
+  const input = state.numBuf.replace('−','-').trim();
+  if(!input) return;
+  const correct = String(q.answer).replace('−','-').trim();
+  resolveAnswer(input===correct, q);
+}
+
+function selectChoice(ci){
+  if(state.phase!=='question') return;
+  const q = state.qs[state.qIdx];
+  resolveAnswer(ci===q.answer, q, ci);
+}
+
+function resolveAnswer(isCorrect, q, chosenIdx){
+  state.phase = 'result';
+  state.lastCorrect = isCorrect;
+
+  if(isCorrect){
+    state.score++;
+    state.combo++;
+    if(state.combo > state.maxCombo) state.maxCombo = state.combo;
+    const baseCoins = 1;
+    const bonus = Math.floor(state.combo/3);
+    const gained = baseCoins + bonus;
+    state.coins += gained;
+    state.coinsEarned += gained;
+    // 敵ダメージ
+    const eInfo = currentEnemy();
+    if(eInfo) eInfo.hp = Math.max(0, eInfo.hp - 1);
+    doFlash('green');
+    animEnemy('shake');
+    addLog(`🗡 ${currentEnemy()?.enemy?.name ?? '敵'} に 1 ダメージ！${state.combo>=2?' 🔥COMBO ×'+state.combo:''}${bonus>0?` 🪙+${gained}`:'🪙+1'}`);
+    if(state.combo>=5) showComboBanner();
+  } else {
+    state.combo = 0;
+    state.noHit = false;
+    const eInfo = currentEnemy();
+    const dmg = eInfo?.enemy?.atk ?? 5;
+    state.heroHp -= dmg;
+    doFlash('red');
+    animEnemy('attack');
+    addLog(`💥 ${dmg} ダメージを受けた…`);
+  }
+
+  // ハイライト（choice4）
+  if(q.type==='choice4'){
+    const prefixes = ['ア','イ','ウ','エ'];
+    q.choices.forEach((_,i)=>{
+      const b = document.getElementById(`cb${i}`);
+      if(!b) return;
+      b.disabled = true;
+      if(i===q.answer) b.classList.add('correct-ans');
+      else if(i===chosenIdx && !isCorrect) b.classList.add('wrong-ans');
+    });
+  } else {
+    const nd = document.getElementById('numDisplay');
+    if(nd){
+      nd.classList.add(isCorrect?'correct-nd':'wrong-nd');
+      if(!isCorrect) nd.textContent = (state.numBuf||'?') + ' → 正解: ' + q.answer;
+    }
+    document.querySelectorAll('.num-btn').forEach(b=>b.disabled=true);
+  }
+
+  // 解説
+  const expArea = document.getElementById('expArea');
+  if(expArea){
+    expArea.className = 'explanation show ' + (isCorrect?'correct-exp':'wrong-exp');
+    expArea.innerHTML = `<div class="exp-head">${isCorrect?'✅ 正解！':'❌ 不正解'}</div>${q.exp}
+      <button class="next-btn" onclick="nextQuestion()" style="margin-top:10px">▶ 次へ進む</button>`;
+  }
+
+  updateHUD();
+
+  // HPチェック
+  if(state.heroHp <= 0){
+    setTimeout(()=>showGameover(), 1200);
+  }
+}
+
+// ===== 次の問題 =====
+function nextQuestion(){
+  if(state.heroHp <= 0){ showGameover(); return; }
+
+  // 敵を倒したか判定
+  const prevSection = state.qs[state.qIdx].section;
+  const eInfo = state.enemyHpMap[prevSection];
+  if(eInfo && eInfo.hp <= 0 && !eInfo.defeated){
+    eInfo.defeated = true;
+    showSkillAcquire(eInfo.enemy.reward);
+    animEnemy('die');
+  }
+
+  state.qIdx++;
+  state.phase = 'question';
+  if(state.qIdx >= state.qs.length){
+    totalScore += state.score;
+    const isLastRound = (currentRound + 1 >= allRounds.length);
+    if(isLastRound){
+      setTimeout(()=>showClear(), 800);
+    } else {
+      setTimeout(()=>showRoundClear(), 800);
+    }
+    return;
+  }
+  renderQuestion();
+  updateHUD();
+  document.getElementById('questionArea').scrollTop = 0;
+}
+
+// ===== ヒント =====
+function useHint(){
+  if(state.hintUsedThisQ || state.coins < 3) return;
+  const q = state.qs[state.qIdx];
+  if(q.type!=='choice4') return;
+  state.coins -= 3;
+  state.hintUsedThisQ = true;
+  state.noHintUsed = false;
+  // 不正解選択肢を1つランダムにグレー
+  const wrongIdxs = q.choices.map((_,i)=>i).filter(i=>i!==q.answer);
+  const target = wrongIdxs[Math.floor(Math.random()*wrongIdxs.length)];
+  const b = document.getElementById(`cb${target}`);
+  if(b) b.classList.add('grayed');
+  addLog('💡 ヒント使用！誤答を1つ除外した（3🪙消費）');
+  updateHUD();
+}
+
+// ===== ゲームオーバー =====
+function showGameover(){
+  document.getElementById('gameoverScore').textContent = state.score;
+  document.getElementById('gameoverMsg').textContent = `${state.score}問正解で力尽きた…\n復習して再挑戦しよう！`;
+  showScreen('gameoverScreen');
+}
+
+// ===== ラウンドクリア =====
+function showRoundClear(){
+  const total = state.qs.length;
+  const nextRoundIdx = currentRound + 1;
+  const nextQs = allRounds[nextRoundIdx] || [];
+
+  document.getElementById('roundScore').textContent = state.score;
+  document.getElementById('roundLabel').textContent = `/ ${total} 問正解（正答率 ${Math.round(state.score/total*100)}%）`;
+  document.getElementById('roundProgress').textContent = `ROUND ${currentRound+1} / ${allRounds.length} クリア！`;
+
+  // 次ラウンドのセクション一覧
+  const sections = [...new Set(nextQs.map(q=>q.section))];
+  document.getElementById('nextSectionList').innerHTML = sections.map(s=>`▸ ${s}`).join('<br>');
+
+  // バッジ
+  const badges = [
+    { id:'perfect', name:'パーフェクト', icon:'👑', cond: state.score===total },
+    { id:'noHit',   name:'ノーダメージ', icon:'🛡', cond: state.noHit },
+    { id:'combo5',  name:'コンボマスター',icon:'🔥', cond: state.maxCombo>=5 },
+    { id:'rich',    name:'コイン長者',   icon:'🪙', cond: state.coinsEarned>=10 },
+    { id:'noHint',  name:'ヒント不要',   icon:'💡', cond: state.noHintUsed },
+    { id:'survivor',name:'ぎりぎり生還', icon:'❤️', cond: state.heroHp<=3 && state.heroHp>0 },
+  ];
+  const grid = document.getElementById('roundBadgesGrid');
+  grid.innerHTML = badges.map(b=>`
+    <div class="badge ${b.cond?'earned':''}">
+      <div class="badge-icon">${b.icon}</div>
+      <div>${b.name}</div>
+    </div>
+  `).join('');
+
+  showScreen('roundClearScreen');
+}
+
+// ===== 全問クリア =====
+function showClear(){
+  const total = QUESTIONS.length;
+  document.getElementById('clearScore').textContent = totalScore;
+  document.getElementById('clearLabel').textContent = `/ ${total} 問中 ${totalScore} 問正解（正答率 ${Math.round(totalScore/total*100)}%）`;
+
+  const pct = totalScore/total;
+  const ranks = [
+    [1.0,'🏆 伝説の数学者'],
+    [0.9,'⭐ 数学の達人'],
+    [0.7,'🎖 上級冒険者'],
+    [0.5,'🗡 一人前の勇者'],
+    [0,'📚 見習い勇者'],
+  ];
+  const rank = ranks.find(r=>pct>=r[0]);
+  document.getElementById('clearRank').textContent = rank?rank[1]:'📚 見習い勇者';
+
+  // バッジ
+  const badges = [
+    { id:'perfect', name:'パーフェクト', icon:'👑', cond: totalScore===total },
+    { id:'noHit',   name:'ノーダメージ', icon:'🛡', cond: state.noHit },
+    { id:'combo5',  name:'コンボマスター',icon:'🔥', cond: state.maxCombo>=5 },
+    { id:'rich',    name:'コイン長者',   icon:'🪙', cond: state.coinsEarned>=10 },
+    { id:'noHint',  name:'ヒント不要',   icon:'💡', cond: state.noHintUsed },
+    { id:'survivor',name:'ぎりぎり生還', icon:'❤️', cond: state.heroHp<=3 && state.heroHp>0 },
+  ];
+  const grid = document.getElementById('badgesGrid');
+  grid.innerHTML = badges.map(b=>`
+    <div class="badge ${b.cond?'earned':''}">
+      <div class="badge-icon">${b.icon}</div>
+      <div>${b.name}</div>
+    </div>
+  `).join('');
+
+  showScreen('clearScreen');
+}
+
+// ===== ログ =====
+function addLog(text){
+  const log = document.getElementById('battleLog');
+  const lines = log.querySelectorAll('.log-line');
+  if(lines.length >= 2) lines[0].remove();
+  const d = document.createElement('div');
+  d.className = 'log-line';
+  d.textContent = text;
+  log.appendChild(d);
+}
+
+// ===== エフェクト =====
+function doFlash(color){
+  const f = document.getElementById('flash');
+  f.className = 'flash-'+color;
+  void f.offsetWidth;
+  f.className = 'flash-'+color;
+}
+function animEnemy(type){
+  const el = document.getElementById('enemyEmoji');
+  el.classList.remove('shake','attack','die');
+  void el.offsetWidth;
+  el.classList.add(type);
+}
+function showSkillAcquire(msg){
+  const el = document.getElementById('skillAcquire');
+  el.textContent = '✨ ' + msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'), 2500);
+}
+function showComboBanner(){
+  const el = document.getElementById('comboBanner');
+  el.textContent = `🔥 COMBO ×${state.combo}！`;
+  el.classList.remove('show');
+  void el.offsetWidth;
+  el.classList.add('show');
+}
+</script>
+</body>
+</html>

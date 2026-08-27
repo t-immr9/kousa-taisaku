@@ -1,0 +1,956 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>数学Ⅱ 対策プリント２ RPGクイズ</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Kaisei+Decol:wght@400;700&family=Caveat:wght@500;700&display=swap" rel="stylesheet">
+<script>
+window.MathJax={
+  tex:{inlineMath:[['\\(','\\)']],displayMath:[['\\[','\\]']]},
+  options:{skipHtmlTags:['script','noscript','style','textarea']},
+  startup:{typeset:false}
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+<style>
+:root{
+  --bg:#0a0c1a;
+  --card:#161a35;
+  --border:#2a3060;
+  --accent:#7c6af7;
+  --accent2:#38bdf8;
+  --gold:#f59e0b;
+  --green:#22c55e;
+  --red:#ef4444;
+  --text:#f0f4ff;
+  --sub:#a5b4fc;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Noto Sans JP',sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;
+  background:
+    radial-gradient(ellipse at 20% 20%,rgba(124,106,247,.15) 0%,transparent 50%),
+    radial-gradient(ellipse at 80% 80%,rgba(56,189,248,.10) 0%,transparent 50%);
+  pointer-events:none;z-index:0;
+}
+#statusBar{display:none;position:sticky;top:0;z-index:100;
+  background:rgba(10,12,26,.92);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);padding:8px 16px;}
+#statusBar.active{display:block}
+.status-inner{display:flex;gap:12px;align-items:center;max-width:700px;margin:0 auto;flex-wrap:wrap}
+.stat-block{display:flex;flex-direction:column;gap:2px;min-width:70px}
+.stat-label{font-family:'Caveat',cursive;font-size:11px;color:var(--sub);text-transform:uppercase}
+.stat-val{font-family:'Caveat',cursive;font-size:15px;font-weight:700;color:var(--gold)}
+.bar-wrap{flex:1;min-width:100px}
+.bar-track{height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.bar-fill{height:100%;border-radius:99px;transition:width .4s,background .4s}
+#hpFill{background:#22c55e}
+#expFill{background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.lv-badge{font-family:'Kaisei Decol',serif;font-size:13px;color:var(--gold);white-space:nowrap}
+#titleScreen{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;padding:32px 20px;text-align:center;position:relative;z-index:1;}
+.float-icon{font-size:72px;animation:float 3s ease-in-out infinite;display:block;margin-bottom:24px}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-16px)}}
+.title-main{font-family:'Kaisei Decol',serif;font-size:clamp(22px,6vw,40px);
+  background:linear-gradient(135deg,#c4b5fd,#38bdf8);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;line-height:1.3;margin-bottom:8px}
+.title-sub{font-size:13px;color:var(--sub);margin-bottom:32px;letter-spacing:.1em}
+.story-box{
+  max-width:520px;background:rgba(22,26,53,.8);border:1px solid var(--border);
+  border-radius:16px;padding:20px 24px;margin-bottom:32px;text-align:left;
+  font-size:14px;line-height:1.9;color:#c7d2fe;}
+.btn-start{
+  font-family:'Kaisei Decol',serif;font-size:18px;
+  background:linear-gradient(135deg,var(--accent),#a855f7);
+  border:none;color:#fff;padding:14px 40px;border-radius:99px;cursor:pointer;
+  box-shadow:0 0 32px rgba(124,106,247,.4);transition:transform .2s,box-shadow .2s;letter-spacing:.08em;}
+.btn-start:hover{transform:scale(1.05);box-shadow:0 0 48px rgba(124,106,247,.6)}
+#gameArea{display:none;max-width:700px;margin:0 auto;padding:16px;position:relative;z-index:1}
+#gameArea.active{display:block}
+.progress-dots{display:flex;flex-wrap:wrap;gap:5px;margin:12px 0;justify-content:center}
+.dot{width:10px;height:10px;border-radius:50%;background:rgba(255,255,255,.15);transition:background .3s}
+.dot.correct{background:var(--green)}
+.dot.wrong{background:var(--red)}
+.dot.current{background:var(--gold);box-shadow:0 0 8px var(--gold)}
+.q-header{font-family:'Caveat',cursive;font-size:14px;color:var(--sub);margin:8px 0 4px}
+.q-card{
+  background:var(--card);border:1px solid var(--border);border-radius:16px;
+  overflow:hidden;margin-bottom:16px;animation:slideUp .35s ease both;}
+@keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+.q-card.flash-red{animation:flashRed .5s ease}
+@keyframes flashRed{0%,100%{background:var(--card)}50%{background:rgba(239,68,68,.2)}}
+.card-top-bar{height:3px;background:linear-gradient(90deg,var(--accent),var(--accent2))}
+.q-body{padding:20px}
+.chapter-header{display:flex;align-items:center;gap:10px;margin-bottom:16px;
+  padding-bottom:12px;border-bottom:1px solid var(--border);}
+.chapter-icon{font-size:22px}
+.chapter-name{font-family:'Kaisei Decol',serif;font-size:15px;color:var(--gold)}
+.chapter-flavor{font-size:11px;color:var(--sub);margin-top:2px}
+.q-num{font-family:'Caveat',cursive;font-size:13px;color:var(--accent2);margin-bottom:10px}
+.q-text{font-size:15px;line-height:1.9;color:var(--text);margin-bottom:20px}
+.choices{display:flex;flex-direction:column;gap:8px}
+.choice-btn{
+  display:flex;align-items:center;gap:12px;
+  background:rgba(255,255,255,.04);border:1.5px solid var(--border);
+  border-radius:10px;padding:12px 14px;cursor:pointer;
+  transition:background .15s,border-color .15s,transform .1s;
+  font-size:14px;color:var(--text);text-align:left;font-family:'Noto Sans JP',sans-serif;}
+.choice-btn:hover:not(:disabled){background:rgba(124,106,247,.15);border-color:var(--accent);transform:translateX(3px)}
+.choice-btn:disabled{cursor:default}
+.choice-btn.correct{background:rgba(34,197,94,.15);border-color:var(--green);color:#bbf7d0}
+.choice-btn.wrong{background:rgba(239,68,68,.15);border-color:var(--red);color:#fecaca}
+.choice-label{
+  font-family:'Caveat',cursive;font-weight:700;font-size:14px;
+  width:26px;height:26px;border-radius:6px;display:flex;align-items:center;justify-content:center;
+  background:rgba(124,106,247,.3);color:var(--accent2);flex-shrink:0;}
+.choice-btn.correct .choice-label{background:rgba(34,197,94,.4);color:#bbf7d0}
+.choice-btn.wrong .choice-label{background:rgba(239,68,68,.4);color:#fecaca}
+.explanation{
+  margin-top:16px;padding:14px;border-radius:10px;font-size:13px;line-height:1.9;
+  animation:fadeIn .3s ease;}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+.explanation.correct-exp{background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3)}
+.explanation.wrong-exp{background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3)}
+.exp-title{font-family:'Kaisei Decol',serif;font-size:14px;margin-bottom:8px}
+.btn-next{
+  display:block;margin-top:16px;width:100%;
+  background:linear-gradient(135deg,var(--accent),#a855f7);
+  border:none;color:#fff;padding:12px;border-radius:10px;cursor:pointer;
+  font-family:'Noto Sans JP',sans-serif;font-size:14px;transition:opacity .2s;}
+.btn-next:hover{opacity:.9}
+#resultScreen{display:none;max-width:700px;margin:0 auto;padding:24px 16px;
+  position:relative;z-index:1;text-align:center}
+#resultScreen.show{display:block}
+.result-badge{
+  display:inline-block;font-family:'Caveat',cursive;font-size:14px;
+  background:rgba(124,106,247,.2);border:1px solid var(--accent);
+  color:var(--accent2);border-radius:99px;padding:4px 16px;margin-bottom:20px;}
+.result-title{font-family:'Kaisei Decol',serif;font-size:clamp(20px,5vw,32px);
+  background:linear-gradient(135deg,#c4b5fd,#38bdf8);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+.result-rank{font-size:32px;margin:16px 0 8px}
+.result-rank-name{font-family:'Kaisei Decol',serif;font-size:22px;color:var(--gold);margin-bottom:24px}
+.result-stats{display:flex;justify-content:center;gap:24px;flex-wrap:wrap;margin-bottom:32px}
+.result-stat{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 24px;min-width:100px}
+.result-stat-val{font-family:'Caveat',cursive;font-size:32px;font-weight:700;color:var(--gold)}
+.result-stat-label{font-size:12px;color:var(--sub);margin-top:4px}
+.btn-next-round{
+  background:linear-gradient(135deg,var(--accent),#a855f7);
+  border:none;color:#fff;padding:14px 36px;border-radius:99px;cursor:pointer;
+  font-family:'Kaisei Decol',serif;font-size:18px;
+  box-shadow:0 0 24px rgba(124,106,247,.4);transition:transform .2s;letter-spacing:.08em;}
+.btn-next-round:hover{transform:scale(1.05)}
+#lvOverlay{display:none;position:fixed;inset:0;z-index:999;
+  background:rgba(0,0,0,.85);align-items:center;justify-content:center;
+  flex-direction:column;text-align:center;}
+#lvOverlay.show{display:flex}
+.lv-up-emoji{font-size:64px;animation:pop .6s ease;display:block;margin-bottom:12px}
+@keyframes pop{0%{transform:scale(0)}70%{transform:scale(1.2)}100%{transform:scale(1)}}
+.lv-up-title{font-family:'Kaisei Decol',serif;font-size:36px;
+  background:linear-gradient(135deg,var(--gold),#fcd34d);-webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;background-clip:text;margin-bottom:4px}
+.lv-up-rank{font-size:20px;color:var(--sub);margin-bottom:8px}
+.lv-up-skill{font-size:14px;color:#c4b5fd;margin-bottom:24px}
+.stars{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.star{position:absolute;font-size:20px;animation:starFly 1.2s ease forwards}
+@keyframes starFly{0%{opacity:1;transform:translate(-50%,-50%) scale(0)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.5) translateY(-80px)}}
+.popup{position:fixed;font-family:'Caveat',cursive;font-weight:700;font-size:22px;
+  pointer-events:none;z-index:500;animation:popupAnim .8s ease forwards;}
+@keyframes popupAnim{0%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-60px) scale(1.3)}}
+.popup.exp{color:#a5f3fc}.popup.hp{color:#fca5a5}
+.particle{position:fixed;pointer-events:none;z-index:400;border-radius:50%;
+  animation:partAnim .8s ease forwards;}
+@keyframes partAnim{0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--dx),var(--dy)) scale(0)}}
+@media(max-width:480px){.status-inner{gap:8px}.result-stats{gap:12px}}
+
+/* === Math overflow fix === */
+.q-text, .explanation {overflow-x:auto;}
+.q-text mjx-container, .explanation mjx-container {max-width:100%; overflow-x:auto; overflow-y:hidden; display:block;}
+mjx-container[jax="CHTML"] {max-width:100%;}
+
+</style>
+</head>
+<body>
+
+<div id="statusBar">
+  <div class="status-inner">
+    <div class="stat-block">
+      <span class="stat-label">HP</span>
+      <span class="stat-val"><span id="hpVal">100</span>/100</span>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-track"><div class="bar-fill" id="hpFill" style="width:100%"></div></div>
+    </div>
+    <div class="stat-block">
+      <span class="stat-label">EXP</span>
+      <span class="stat-val"><span id="expVal">0</span></span>
+    </div>
+    <div class="bar-wrap">
+      <div class="bar-track"><div class="bar-fill" id="expFill" style="width:0%"></div></div>
+    </div>
+    <div class="lv-badge" id="lvBadge">Lv1 見習い🧙</div>
+    <div class="stat-block">
+      <span class="stat-label">SCORE</span>
+      <span class="stat-val" id="scoreVal">0</span>
+    </div>
+  </div>
+</div>
+
+<div id="titleScreen">
+  <span class="float-icon">🏰</span>
+  <div class="title-main">数学Ⅱ 魔法院<br>試練の書・第２章</div>
+  <div class="title-sub">1学期中間考査 対策プリント２</div>
+  <div class="story-box">
+    📜 展開・因数分解の呪文、パスカルの三角形の秘法、<br>
+    多項式除算の奥義、分数式の練成術、<br>
+    複素数の秘術、そして二次方程式の解の探知——<br><br>
+    全問の試練を3周で制覇し、<br>
+    伝説の数学魔導士となれ！
+  </div>
+  <button class="btn-start" onclick="startGame()">⚔️ 試練を開始する</button>
+</div>
+
+<div id="gameArea">
+  <div class="progress-dots" id="progressDots"></div>
+  <div class="q-header" id="qHeader"></div>
+  <div id="qCardWrap"></div>
+</div>
+
+<div id="resultScreen">
+  <div class="result-badge" id="resultBadge"></div>
+  <div class="result-title">試練の記録</div>
+  <div class="result-rank" id="resultRankEmoji"></div>
+  <div class="result-rank-name" id="resultRankName"></div>
+  <div class="result-stats">
+    <div class="result-stat">
+      <div class="result-stat-val" id="rCorrect">0</div>
+      <div class="result-stat-label">正解数</div>
+    </div>
+    <div class="result-stat">
+      <div class="result-stat-val" id="rLv">1</div>
+      <div class="result-stat-label">最終Lv</div>
+    </div>
+    <div class="result-stat">
+      <div class="result-stat-val" id="rExp">0</div>
+      <div class="result-stat-label">獲得EXP</div>
+    </div>
+  </div>
+  <button class="btn-next-round" id="btnNextRound"></button>
+</div>
+
+<div id="lvOverlay">
+  <div class="stars" id="starsContainer"></div>
+  <span class="lv-up-emoji" id="lvUpEmoji"></span>
+  <div class="lv-up-title">LEVEL UP!</div>
+  <div class="lv-up-rank" id="lvUpRank"></div>
+  <div class="lv-up-skill" id="lvUpSkill"></div>
+  <button class="btn-start" onclick="closeLvUp()">続ける</button>
+</div>
+
+<script>
+var ALL_Q = [
+  // 大問1: 式の展開
+  {
+    chapter:1,
+    text:'次の式を展開せよ。\\[(x+3)^3\\]',
+    choices:[
+      {label:'\\(x^3+9x^2+27x+27\\)',correct:true},
+      {label:'\\(x^3+6x^2+9x+27\\)',correct:false},
+      {label:'\\(x^3+3x^2+9x+27\\)',correct:false},
+      {label:'\\(x^3+9x^2+9x+3\\)',correct:false}
+    ],
+    exp:'\\((a+b)^3=a^3+3a^2b+3ab^2+b^3\\) より \\((x+3)^3=x^3+9x^2+27x+27\\)。'
+  },
+  {
+    chapter:1,
+    text:'次の式を展開せよ。\\[(x-2)(x^2+2x+4)\\]',
+    choices:[
+      {label:'\\(x^3-8\\)',correct:true},
+      {label:'\\(x^3+8\\)',correct:false},
+      {label:'\\(x^3-2x^2-4x-8\\)',correct:false},
+      {label:'\\(x^3-4x^2+8\\)',correct:false}
+    ],
+    exp:'\\((a-b)(a^2+ab+b^2)=a^3-b^3\\) の公式。\\(a=x,b=2\\) として \\(x^3-8\\)。'
+  },
+  // 大問2: 因数分解
+  {
+    chapter:2,
+    text:'次の式を因数分解せよ。\\[x^3-8\\]',
+    choices:[
+      {label:'\\((x-2)(x^2+2x+4)\\)',correct:true},
+      {label:'\\((x-2)^3\\)',correct:false},
+      {label:'\\((x+2)(x^2-2x+4)\\)',correct:false},
+      {label:'\\((x-2)(x^2-2x+4)\\)',correct:false}
+    ],
+    exp:'\\(a^3-b^3=(a-b)(a^2+ab+b^2)\\) より \\(x^3-2^3=(x-2)(x^2+2x+4)\\)。'
+  },
+  {
+    chapter:2,
+    text:'次の式を因数分解せよ。\\[x^4-81\\]',
+    choices:[
+      {label:'\\((x^2+9)(x+3)(x-3)\\)',correct:true},
+      {label:'\\((x^2-9)^2\\)',correct:false},
+      {label:'\\((x+3)^2(x-3)^2\\)',correct:false},
+      {label:'\\((x^2+9)(x^2-9)\\)',correct:false}
+    ],
+    exp:'\\(x^4-81=(x^2+9)(x^2-9)=(x^2+9)(x+3)(x-3)\\)。'
+  },
+  // 大問3: パスカルの三角形
+  {
+    chapter:3,
+    text:'パスカルの三角形を利用して、\\((x+y)^4\\) の展開の係数として正しいものを選べ。',
+    choices:[
+      {label:'\\(1,\\;4,\\;6,\\;4,\\;1\\)',correct:true},
+      {label:'\\(1,\\;3,\\;3,\\;1\\)',correct:false},
+      {label:'\\(1,\\;4,\\;4,\\;4,\\;1\\)',correct:false},
+      {label:'\\(1,\\;5,\\;10,\\;10,\\;5,\\;1\\)',correct:false}
+    ],
+    exp:'\\((x+y)^4\\) の二項係数は \\({}_4C_0,{}_4C_1,{}_4C_2,{}_4C_3,{}_4C_4=1,4,6,4,1\\)。'
+  },
+  {
+    chapter:3,
+    text:'パスカルの三角形を利用して \\((x+y)^5\\) を展開したものはどれか。',
+    choices:[
+      {label:'\\(x^5+5x^4y+10x^3y^2+10x^2y^3+5xy^4+y^5\\)',correct:true},
+      {label:'\\(x^5+4x^4y+6x^3y^2+4x^2y^3+y^5\\)',correct:false},
+      {label:'\\(x^5+5x^4y+5x^3y^2+5x^2y^3+5xy^4+y^5\\)',correct:false},
+      {label:'\\(x^5+5x^4y+10x^3y^2+5x^2y^3+5xy^4+y^5\\)',correct:false}
+    ],
+    exp:'第6行の係数 \\(1,5,10,10,5,1\\) を使う。\\((x+y)^5=x^5+5x^4y+10x^3y^2+10x^2y^3+5xy^4+y^5\\)。'
+  },
+  // 大問4: 多項式の割り算
+  {
+    chapter:4,
+    text:'\\(A=x^2+11x+29\\) を \\(B=x+4\\) で割ったときの商と余りを求めよ。',
+    choices:[
+      {label:'商 \\(x+7\\)、余り \\(1\\)',correct:true},
+      {label:'商 \\(x+7\\)、余り \\(-1\\)',correct:false},
+      {label:'商 \\(x+4\\)、余り \\(13\\)',correct:false},
+      {label:'商 \\(x+11\\)、余り \\(0\\)',correct:false}
+    ],
+    exp:'割り算を実行：\\(x^2+11x+29=(x+4)(x+7)+1\\)。商 \\(x+7\\)、余り \\(1\\)。'
+  },
+  {
+    chapter:4,
+    text:'\\(A=2x^3-5x^2+4x-3\\) を \\(B=x^2-x+1\\) で割ったときの商を求めよ。',
+    choices:[
+      {label:'\\(2x-3\\)',correct:true},
+      {label:'\\(2x+3\\)',correct:false},
+      {label:'\\(x-3\\)',correct:false},
+      {label:'\\(2x^2-3\\)',correct:false}
+    ],
+    exp:'\\(2x^3-5x^2+4x-3=(x^2-x+1)(2x-3)+0\\)。商は \\(2x-3\\)、余り \\(0\\)。'
+  },
+  // 大問5: 分数式の約分
+  {
+    chapter:5,
+    text:'次を約分して既約分数式で表せ。\\[\\dfrac{9a^3b^2}{6a^4b}\\]',
+    choices:[
+      {label:'\\(\\dfrac{3b}{2a}\\)',correct:true},
+      {label:'\\(\\dfrac{3b}{2a^2}\\)',correct:false},
+      {label:'\\(\\dfrac{9b}{6a}\\)',correct:false},
+      {label:'\\(\\dfrac{3b^2}{2a}\\)',correct:false}
+    ],
+    exp:'\\(\\dfrac{9a^3b^2}{6a^4b}=\\dfrac{3b}{2a}\\)。（\\(9/6=3/2\\)、\\(a^3/a^4=1/a\\)、\\(b^2/b=b\\)）'
+  },
+  {
+    chapter:5,
+    text:'次を約分して既約分数式で表せ。\\[\\dfrac{x(x-1)}{(x+1)(x-1)}\\]',
+    choices:[
+      {label:'\\(\\dfrac{x}{x+1}\\)',correct:true},
+      {label:'\\(\\dfrac{x-1}{x+1}\\)',correct:false},
+      {label:'\\(\\dfrac{x}{x-1}\\)',correct:false},
+      {label:'\\(x(x+1)\\)',correct:false}
+    ],
+    exp:'共通因数 \\((x-1)\\) を約分。\\(\\dfrac{x(x-1)}{(x+1)(x-1)}=\\dfrac{x}{x+1}\\)。'
+  },
+  // 大問6: 分数式の乗除
+  {
+    chapter:6,
+    text:'次の計算をせよ。\\[\\dfrac{x+1}{x-1}\\times\\dfrac{x+3}{x+1}\\]',
+    choices:[
+      {label:'\\(\\dfrac{x+3}{x-1}\\)',correct:true},
+      {label:'\\(\\dfrac{x+1}{x+3}\\)',correct:false},
+      {label:'\\(\\dfrac{x+3}{x+1}\\)',correct:false},
+      {label:'\\(\\dfrac{x-1}{x+3}\\)',correct:false}
+    ],
+    exp:'\\((x+1)\\) を約分。\\(\\dfrac{x+1}{x-1}\\times\\dfrac{x+3}{x+1}=\\dfrac{x+3}{x-1}\\)。'
+  },
+  { 
+ chapter:6, 
+ text:'次の計算をせよ。\\[\\dfrac{x^2-x}{x+3}\\times\\dfrac{x^2+4x+3}{x^2+x}\\]', 
+ choices:[ 
+ {label:'\\(x-1\\)',correct:true}, 
+ {label:'\\(\\dfrac{x-1}{x+3}\\)',correct:false}, 
+ {label:'\\(\\dfrac{x-1}{x}\\)',correct:false}, 
+ {label:'\\(\\dfrac{(x-1)(x+3)}{x+1}\\)',correct:false} 
+ ], 
+ exp:'\\(x^2-x=x(x-1)\\)、\\(x^2+4x+3=(x+1)(x+3)\\)、\\(x^2+x=x(x+1)\\)。よって \n\\[\\dfrac{x(x-1)}{x+3}\\times\\dfrac{(x+1)(x+3)}{x(x+1)}=x-1\\]\n\\(x\\)、\\(x+1\\)、\\(x+3\\) を約分する。なお \\(x\\neq0,-1,-3\\)。' 
+ },
+
+  { 
+ chapter:6, 
+ text:'次の計算をせよ。\\[\\dfrac{2}{x^2-9}\\div\\dfrac{x-5}{x^2-8x+15}\\]', 
+ choices:[ 
+ {label:'\\(\\dfrac{2}{x+3}\\)',correct:true}, 
+ {label:'\\(\\dfrac{2}{(x+3)(x-5)}\\)',correct:false}, 
+ {label:'\\(\\dfrac{2(x-5)}{x^2-9}\\)',correct:false}, 
+ {label:'\\(\\dfrac{2(x-3)}{x+3}\\)',correct:false} 
+ ], 
+ exp:'\\(x^2-9=(x-3)(x+3)\\)、\\(x^2-8x+15=(x-3)(x-5)\\)。逆数をかけて \\((x-5)\\) を約分し、さらに \\((x-3)\\) を約分：\\(\\dfrac{2}{(x-3)(x+3)}\\times\\dfrac{(x-3)(x-5)}{x-5}=\\dfrac{2}{x+3}\\)。ただし \\((x\\neq\\pm3,5)\\)。' 
+ },
+
+  // 大問7: 分数式の加減
+  {
+    chapter:7,
+    text:'次の計算をせよ。\\[\\dfrac{x}{x+3}+\\dfrac{3}{x+3}\\]',
+    choices:[
+      {label:'\\(1\\)',correct:true},
+      {label:'\\(\\dfrac{x+3}{x}\\)',correct:false},
+      {label:'\\(\\dfrac{x}{3}\\)',correct:false},
+      {label:'\\(\\dfrac{2x+3}{x+3}\\)',correct:false}
+    ],
+    exp:'同分母なので \\(\\dfrac{x+3}{x+3}=1\\)。'
+  },
+  {
+    chapter:7,
+    text:'次の計算をせよ。\\[\\dfrac{1}{3x}-\\dfrac{1}{3x+1}\\]',
+    choices:[
+      {label:'\\(\\dfrac{1}{3x(3x+1)}\\)',correct:true},
+      {label:'\\(\\dfrac{1}{9x^2+3x+1}\\)',correct:false},
+      {label:'\\(\\dfrac{2}{6x+1}\\)',correct:false},
+      {label:'\\(\\dfrac{1}{3x^2+1}\\)',correct:false}
+    ],
+    exp:'通分：\\(\\dfrac{3x+1-3x}{3x(3x+1)}=\\dfrac{1}{3x(3x+1)}\\)。'
+  },
+  {
+    chapter:7,
+    text:'次の計算をせよ。\\[\\dfrac{x^2-2}{x^2+2x}-\\dfrac{2}{x^2+2x}\\]',
+    choices:[
+      {label:'\\(\\dfrac{x-2}{x}\\)',correct:true},
+      {label:'\\(\\dfrac{x+2}{x}\\)',correct:false},
+      {label:'\\(\\dfrac{x-2}{x+2}\\)',correct:false},
+      {label:'\\(\\dfrac{x^2-4}{x^2+2x}\\)',correct:false}
+    ],
+    exp:'\\(\\dfrac{x^2-4}{x(x+2)}=\\dfrac{(x+2)(x-2)}{x(x+2)}=\\dfrac{x-2}{x}\\)。'
+  },
+  // 大問8: 恒等式の判別
+  {
+ chapter:8,
+ text:'次の等式のうち恒等式はどれか。\\[\\begin{aligned}(1)&\; (x+1)(x+3)=x^2-2x-3\\\\(2)&\; (a-b)^2=a^2-b^2\\\\(3)&\; (a+b)^2-2ab=a^2+b^2\\end{aligned}\\]',
+    choices:[
+      {label:'(3) のみ',correct:true},
+      {label:'(1) のみ',correct:false},
+      {label:'(1) と (3)',correct:false},
+      {label:'すべて恒等式でない',correct:false}
+    ],
+    exp:'(1) 左辺 \\(=x^2+4x+3\\neq x^2-2x-3\\)。(2) \\((a-b)^2=a^2-2ab+b^2\\neq a^2-b^2\\)。(3) \\((a+b)^2-2ab=a^2+2ab+b^2-2ab=a^2+b^2\\) 恒等式。'
+  },
+  // 大問9: 恒等式の定数決定
+  {
+    chapter:9,
+    text:'\\(2x^2+6x+5=a(x+1)^2+b(x+1)+c\\) が恒等式のとき、\\(a,b,c\\) の値を求めよ。',
+    choices:[
+      {label:'\\(a=2,\\;b=2,\\;c=1\\)',correct:true},
+      {label:'\\(a=2,\\;b=6,\\;c=5\\)',correct:false},
+      {label:'\\(a=1,\\;b=2,\\;c=5\\)',correct:false},
+      {label:'\\(a=2,\\;b=2,\\;c=5\\)',correct:false}
+    ],
+    exp:'右辺展開：\\(ax^2+(2a+b)x+(a+b+c)\\)。係数比較：\\(a=2,\\;2a+b=6\\Rightarrow b=2,\\;a+b+c=5\\Rightarrow c=1\\)。'
+  },
+  // 大問10: 複素数の実数条件
+  {
+    chapter:10,
+    text:'次の等式を満たす実数 \\(x, y\\) を求めよ。\\[x+yi=4-2i\\]',
+    choices:[
+      {label:'\\(x=4,\\;y=-2\\)',correct:true},
+      {label:'\\(x=4,\\;y=2\\)',correct:false},
+      {label:'\\(x=-4,\\;y=2\\)',correct:false},
+      {label:'\\(x=2,\\;y=-4\\)',correct:false}
+    ],
+    exp:'複素数の相等：実部 \\(x=4\\)、虚部 \\(y=-2\\)。'
+  },
+  {
+    chapter:10,
+    text:'次の等式を満たす実数 \\(x, y\\) を求めよ。\\[(x+1)+(y-2)i=-3\\]',
+    choices:[
+      {label:'\\(x=-4,\\;y=2\\)',correct:true},
+      {label:'\\(x=-2,\\;y=2\\)',correct:false},
+      {label:'\\(x=-4,\\;y=-2\\)',correct:false},
+      {label:'\\(x=4,\\;y=-2\\)',correct:false}
+    ],
+    exp:'右辺 \\(=-3+0i\\)。実部：\\(x+1=-3\\Rightarrow x=-4\\)、虚部：\\(y-2=0\\Rightarrow y=2\\)。'
+  },
+  // 大問11: 複素数の計算
+  {
+    chapter:11,
+    text:'次の計算をせよ。\\[(5-2i)+(4+7i)\\]',
+    choices:[
+      {label:'\\(9+5i\\)',correct:true},
+      {label:'\\(9-5i\\)',correct:false},
+      {label:'\\(1-9i\\)',correct:false},
+      {label:'\\(1+5i\\)',correct:false}
+    ],
+    exp:'実部：\\(5+4=9\\)、虚部：\\(-2+7=5\\)。答え \\(9+5i\\)。'
+  },
+  {
+    chapter:11,
+    text:'次の計算をせよ。\\[(2+6i)-(4+3i)\\]',
+    choices:[
+      {label:'\\(-2+3i\\)',correct:true},
+      {label:'\\(2+3i\\)',correct:false},
+      {label:'\\(-2-3i\\)',correct:false},
+      {label:'\\(6+9i\\)',correct:false}
+    ],
+    exp:'実部：\\(2-4=-2\\)、虚部：\\(6-3=3\\)。答え \\(-2+3i\\)。'
+  },
+  {
+    chapter:11,
+    text:'次の計算をせよ。\\[(1+2i)(2-3i)\\]',
+    choices:[
+      {label:'\\(8+i\\)',correct:true},
+      {label:'\\(2-6i^2\\)',correct:false},
+      {label:'\\(-4+7i\\)',correct:false},
+      {label:'\\(8-i\\)',correct:false}
+    ],
+    exp:'\\((1+2i)(2-3i)=2-3i+4i-6i^2=2+i+6=8+i\\)。（\\(i^2=-1\\)）'
+  },
+  {
+    chapter:11,
+    text:'次の計算をせよ。\\[\\dfrac{1-i}{2+i}\\]',
+    choices:[
+      {label:'\\(\\dfrac{1}{5}-\\dfrac{3}{5}i\\)',correct:true},
+      {label:'\\(\\dfrac{1}{5}+\\dfrac{3}{5}i\\)',correct:false},
+      {label:'\\(1-i\\)',correct:false},
+      {label:'\\(-\\dfrac{1}{3}+\\dfrac{1}{3}i\\)',correct:false}
+    ],
+    exp:'共役 \\((2-i)\\) を掛ける：\\(\\dfrac{(1-i)(2-i)}{5}=\\dfrac{2-i-2i+i^2}{5}=\\dfrac{1-3i}{5}=\\dfrac{1}{5}-\\dfrac{3}{5}i\\)。'
+  },
+  // 大問12: 二次方程式
+  {
+    chapter:12,
+    text:'次の二次方程式を解け。\\[x^2=-16\\]',
+    choices:[
+      {label:'\\(x=\\pm4i\\)',correct:true},
+      {label:'\\(x=\\pm4\\)',correct:false},
+      {label:'\\(x=4i\\)',correct:false},
+      {label:'解なし',correct:false}
+    ],
+    exp:'\\(x^2=-16\\) より \\(x=\\pm\\sqrt{-16}=\\pm4i\\)。'
+  },
+  {
+    chapter:12,
+    text:'次の二次方程式を解け。\\[x^2-4x+4=0\\]',
+    choices:[
+      {label:'\\(x=2\\)（重解）',correct:true},
+      {label:'\\(x=2,\\;x=-2\\)',correct:false},
+      {label:'\\(x=-2\\)（重解）',correct:false},
+      {label:'\\(x=4\\)',correct:false}
+    ],
+    exp:'\\((x-2)^2=0\\) より \\(x=2\\)（重解）。'
+  },
+  {
+    chapter:12,
+    text:'次の二次方程式を解け。\\[x^2+5x+8=0\\]',
+    choices:[
+      {label:'\\(x=\\dfrac{-5\\pm \\sqrt{7}i}{2}\\)',correct:true},
+      {label:'\\(x=\\dfrac{-5\\pm\\sqrt{7}}{2}\\)',correct:false},
+      {label:'\\(x=\\dfrac{5\\pm \\sqrt{7}i}{2}\\)',correct:false},
+      {label:'\\(x=\\dfrac{-5\\pm\\sqrt{57}}{2}\\)',correct:false}
+    ],
+    exp:'解の公式：\\(x=\\dfrac{-5\\pm\\sqrt{25-32}}{2}=\\dfrac{-5\\pm\\sqrt{7}i}{2}=\\dfrac{-5\\pm \\sqrt{7}i}{2}\\)。'
+  },
+  {
+    chapter:12,
+    text:'次の二次方程式を解け。\\[2x^2-4x+5=0\\]',
+    choices:[
+      {label:'\\(x=\\dfrac{2\\pm\\sqrt{6}i}{2}\\)',correct:true},
+      {label:'\\(x=\\dfrac{4\\pm\\sqrt{6}}{4}\\)',correct:false},
+      {label:'\\(x=\\dfrac{-4\\pm \\sqrt{6}i}{4}\\)',correct:false},
+      {label:'\\(x=1\\pm\\sqrt{6}\\)',correct:false}
+    ],
+    exp:'解の公式：\\(x=\\dfrac{4\\pm\\sqrt{16-40}}{4}=\\dfrac{4\\pm\\sqrt{-24}}{4}=\\dfrac{4\\pm2\\sqrt{6}i}{4}=\\dfrac{2\\pm\\sqrt{6}i}{2}\\)。'
+  },
+  // 大問13: 判別式
+  {
+    chapter:13,
+    text:'二次方程式 \\(x^2-3x+5=0\\) の解の種類を選べ。（①異なる2実数解、②重解、③異なる2虚数解）',
+    choices:[
+      {label:'③ 異なる2つの虚数解',correct:true},
+      {label:'① 異なる2つの実数解',correct:false},
+      {label:'② 重解',correct:false},
+      {label:'判別不能',correct:false}
+    ],
+    exp:'\\(D=(-3)^2-4(1)(5)=9-20=-11<0\\) なので③異なる2つの虚数解。'
+  },
+  {
+    chapter:13,
+    text:'二次方程式 \\(3x^2-2x-1=0\\) の解の種類を選べ。（①異なる2実数解、②重解、③異なる2虚数解）',
+    choices:[
+      {label:'① 異なる2つの実数解',correct:true},
+      {label:'② 重解',correct:false},
+      {label:'③ 異なる2つの虚数解',correct:false},
+      {label:'判別不能',correct:false}
+    ],
+    exp:'\\(D=(-2)^2-4(3)(-1)=4+12=16>0\\) なので①異なる2つの実数解。'
+  },
+  {
+    chapter:13,
+    text:'二次方程式 \\(9x^2+6x+1=0\\) の解の種類を選べ。（①異なる2実数解、②重解、③異なる2虚数解）',
+    choices:[
+      {label:'② 重解',correct:true},
+      {label:'① 異なる2つの実数解',correct:false},
+      {label:'③ 異なる2つの虚数解',correct:false},
+      {label:'判別不能',correct:false}
+    ],
+    exp:'\\(D=6^2-4(9)(1)=36-36=0\\) なので②重解。\\((3x+1)^2=0\\)。'
+  },
+  // 大問14: 比例式の証明
+  {
+    chapter:14,
+    text:'\\(\\dfrac{a}{b}=\\dfrac{c}{d}\\) のとき、\\(\\dfrac{a}{b}=k\\) とおくと \\(a,c\\) はそれぞれどう表せるか。正しい組み合わせを選べ。',
+    choices:[ 
+ {label:'\\(a=bk,\;c=dk\\)',correct:true}, 
+ {label:'\\(a=bk,\;c=bk\\)',correct:false}, 
+ {label:'\\(a=\\dfrac{b}{k},\;c=\\dfrac{d}{k}\\)',correct:false}, 
+ {label:'\\(a=dk,\;c=bk\\)',correct:false} 
+ ],
+ exp:'\\(\\dfrac{a}{b}=k\\) より \\(a=bk\\)。\\(\\dfrac{c}{d}=k\\) より \\(c=dk\\)。これを使い等式を証明する。'
+  },
+  // 大問15: 不等式の証明
+  {
+    chapter:15,
+    text:'\\(a^2+4b^2\\geqq2ab\\) の証明で \\((a-b)^2+\\square\\geqq0\\) と変形するとき、\\(\\square\\) に入る式はどれか。',
+    choices:[
+      {label:'\\(3b^2\\)',correct:true},
+      {label:'\\(b^2\\)',correct:false},
+      {label:'\\(2b^2\\)',correct:false},
+      {label:'\\(4b^2\\)',correct:false}
+    ],
+    exp:'\\(a^2+4b^2-2ab=(a^2-2ab+b^2)+3b^2=(a-b)^2+3b^2\\)。両項とも \\(\\geqq0\\) なので不等式成立。'
+  },
+  {
+    chapter:15,
+    text:'不等式 \\(a^2+4b^2\\geqq2ab\\) で等号が成り立つのはどのようなときか。',
+    choices:[
+      {label:'\\(a=b=0\\)',correct:true},
+      {label:'\\(a=b\\)',correct:false},
+      {label:'\\(a=1,\\;b=0\\)',correct:false},
+      {label:'常に等号は成立しない',correct:false}
+    ],
+    exp:'\\((a-b)^2=0\\) かつ \\(3b^2=0\\) を同時に満たすとき。\\(b=0\\) かつ \\(a-b=0\\) なので \\(a=b=0\\)。'
+  },
+  // 大問16: 相加・相乗平均
+  {
+    chapter:16,
+    text:'16 と 25 の相加平均を求めよ。',
+    choices:[
+      {label:'\\(\\dfrac{41}{2}\\)',correct:true},
+      {label:'\\(20\\)',correct:false},
+      {label:'\\(41\\)',correct:false},
+      {label:'\\(\\dfrac{25}{2}\\)',correct:false}
+    ],
+    exp:'相加平均 \\(=\\dfrac{16+25}{2}=\\dfrac{41}{2}=20.5\\)。'
+  },
+  {
+    chapter:16,
+    text:'16 と 25 の相乗平均を求めよ。',
+    choices:[
+      {label:'\\(20\\)',correct:true},
+      {label:'\\(\\sqrt{41}\\)',correct:false},
+      {label:'\\(\\dfrac{41}{2}\\)',correct:false},
+      {label:'\\(400\\)',correct:false}
+    ],
+    exp:'相乗平均 \\(=\\sqrt{16\\times25}=\\sqrt{400}=20\\)。'
+  },
+  {
+    chapter:16,
+    text:'\\(a>0\\) のとき \\(a+\\dfrac{25}{a}\\) の最小値を求めよ。',
+    choices:[
+      {label:'\\(10\\)',correct:true},
+      {label:'\\(5\\)',correct:false},
+      {label:'\\(25\\)',correct:false},
+      {label:'\\(50\\)',correct:false}
+    ],
+    exp:'相加・相乗平均：\\(a+\\dfrac{25}{a}\\geqq2\\sqrt{a\\cdot\\dfrac{25}{a}}=2\\times5=10\\)。等号は \\(a=5\\) のとき。最小値 \\(10\\)。'
+  }
+];
+
+var CHAPTERS = {
+  1: {icon:'✨',name:'式の展開の呪文',flavor:'三乗の魔術で多項式を解き放て'},
+  2: {icon:'🔮',name:'因数分解の秘術',flavor:'積の形に変える分解の魔法'},
+  3: {icon:'🔺',name:'パスカルの三角形',flavor:'数の三角に二項係数の法則が宿る'},
+  4: {icon:'⚔️',name:'多項式の除算術',flavor:'商と余りを求める割り算の剣技'},
+  5: {icon:'🌿',name:'分数式の約分法',flavor:'共通因数を見つけ式を簡約せよ'},
+  6: {icon:'⚡',name:'分数式の乗除術',flavor:'掛け算割り算で分数式を制す'},
+  7: {icon:'🌊',name:'分数式の加減術',flavor:'通分の波に乗り足し引きをこなせ'},
+  8: {icon:'📜',name:'恒等式の判別法',flavor:'全ての値で成り立つ式を見極めよ'},
+  9: {icon:'🗺️',name:'恒等式の定数決定',flavor:'係数比較で隠れた定数を暴き出せ'},
+  10:{icon:'💎',name:'複素数の実数条件',flavor:'実部・虚部を分けて等式を解け'},
+  11:{icon:'🌙',name:'複素数の計算術',flavor:'虚数単位iを操る演算の魔法'},
+  12:{icon:'🏺',name:'二次方程式の解法',flavor:'解の公式で複素数解も求めよ'},
+  13:{icon:'🔍',name:'判別式の探知術',flavor:'Dの符号で解の種類を見通せ'},
+  14:{icon:'⚖️',name:'比例式の証明法',flavor:'k置き換えで等式を論理的に導け'},
+  15:{icon:'🛡️',name:'不等式の証明術',flavor:'平方完成で不等式の証明を制せよ'},
+  16:{icon:'👑',name:'相加・相乗平均',flavor:'平均の不等式で最小値を錬成せよ'}
+};
+
+var LEVELS = [
+  {lv:1, title:'見習い魔法使い', emoji:'🧙', skill:'算術の基礎を学んだ',     expReq:0},
+  {lv:2, title:'初学の術士',     emoji:'📚', skill:'展開・因数分解を習得',   expReq:80},
+  {lv:3, title:'分数式の使い手', emoji:'⚗️', skill:'分数式の魔法を会得',    expReq:200},
+  {lv:4, title:'恒等式の戦士',   emoji:'⚔️', skill:'恒等式解読術を習得',    expReq:360},
+  {lv:5, title:'複素数の魔導士', emoji:'💎', skill:'虚数の扉を開いた',       expReq:560},
+  {lv:6, title:'判別式の賢者',   emoji:'🔍', skill:'判別式の洞察を得た',     expReq:800},
+  {lv:7, title:'証明の大賢者',   emoji:'⚖️', skill:'証明の極意を修得',       expReq:1080},
+  {lv:8, title:'不等式の覇者',   emoji:'🛡️', skill:'不等式を完全制覇',       expReq:1400},
+  {lv:9, title:'数学の大賢者',   emoji:'🏆', skill:'全分野を統べる者',       expReq:1760},
+  {lv:10,title:'伝説の賢者',     emoji:'👑', skill:'数学の全知全能を得た',   expReq:2160}
+];
+
+var hp,exp,score,lv,totalExpGained;
+var setIdx,setIndices,setTotal;
+var shuffledQ,qIdx;
+var answered,dotStates;
+
+function fy(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var t=a[i];a[i]=a[j];a[j]=t;
+  }
+  return a;
+}
+function applyPos(cs){return fy(cs);}
+
+function buildSets(){
+  var shuffled=fy(ALL_Q.map(function(_,i){return i;}));
+  var n=shuffled.length;
+  return[
+    shuffled.slice(0,Math.ceil(n/3)),
+    shuffled.slice(Math.ceil(n/3),Math.ceil(n/3)*2),
+    shuffled.slice(Math.ceil(n/3)*2)
+  ];
+}
+
+function startGame(){
+  setIdx=0;
+  setIndices=buildSets();
+  document.getElementById('titleScreen').style.display='none';
+  newGame();
+}
+
+function restartGame(){
+  setIdx=(setIdx+1)%3;
+  newGame();
+}
+
+function newGame(){
+  hp=100;exp=0;score=0;lv=1;totalExpGained=0;answered=false;
+  updateStatus();
+  var idxList=setIndices[setIdx];
+  setTotal=idxList.length;
+  shuffledQ=idxList.map(function(i){
+    return{chapter:ALL_Q[i].chapter,text:ALL_Q[i].text,exp:ALL_Q[i].exp,
+           shuffled:applyPos(ALL_Q[i].choices)};
+  });
+  qIdx=0;
+  dotStates=[];
+  for(var i=0;i<setTotal;i++) dotStates.push('');
+  document.getElementById('resultScreen').classList.remove('show');
+  document.getElementById('gameArea').classList.add('active');
+  document.getElementById('statusBar').classList.add('active');
+  showQuestion();
+}
+
+function showQuestion(){
+  if(qIdx>=setTotal){showResult();return;}
+  answered=false;
+  var dotsEl=document.getElementById('progressDots');
+  dotsEl.innerHTML='';
+  for(var i=0;i<setTotal;i++){
+    var d=document.createElement('div');
+    var cls='dot';
+    if(i<qIdx) cls+=(dotStates[i]==='correct')?' correct':' wrong';
+    if(i===qIdx) cls+=' current';
+    d.className=cls;
+    dotsEl.appendChild(d);
+  }
+  document.getElementById('qHeader').textContent='Q '+(qIdx+1)+' / '+setTotal+'　（第'+(setIdx+1)+'周）';
+  var q=shuffledQ[qIdx];
+  var ch=CHAPTERS[q.chapter]||{icon:'📖',name:'演習',flavor:''};
+  var wrap=document.getElementById('qCardWrap');
+  wrap.innerHTML='<div class="q-card" id="qCard">'+
+    '<div class="card-top-bar"></div>'+
+    '<div class="q-body">'+
+    '<div class="chapter-header">'+
+    '<span class="chapter-icon">'+ch.icon+'</span>'+
+    '<div><div class="chapter-name">'+ch.name+'</div>'+
+    '<div class="chapter-flavor">'+ch.flavor+'</div></div></div>'+
+    '<div class="q-num">問題 '+(qIdx+1)+'</div>'+
+    '<div class="q-text" id="qText">'+q.text+'</div>'+
+    '<div class="choices" id="choicesEl"></div>'+
+    '<div id="expArea"></div>'+
+    '</div></div>';
+  var labels=['ア','イ','ウ','エ'];
+  var choicesEl=document.getElementById('choicesEl');
+  q.shuffled.forEach(function(c,i){
+    var btn=document.createElement('button');
+    btn.className='choice-btn';
+    btn.innerHTML='<span class="choice-label">'+labels[i]+'</span><span>'+c.label+'</span>';
+    (function(choice,button){
+      button.onclick=function(){selectAnswer(choice.correct,button,q);};
+    })(c,btn);
+    choicesEl.appendChild(btn);
+  });
+  mjTypeset(wrap);
+}
+
+function selectAnswer(isCorrect,btn,q){
+  if(answered)return;
+  answered=true;
+  var btns=document.querySelectorAll('.choice-btn');
+  btns.forEach(function(b){b.disabled=true;});
+  btns.forEach(function(b,i){
+    if(q.shuffled[i].correct) b.classList.add('correct');
+    else if(b===btn&&!isCorrect) b.classList.add('wrong');
+  });
+  if(isCorrect){
+    score++;exp+=40;totalExpGained+=40;
+    dotStates[qIdx]='correct';
+    showPopup(btn,'+40 EXP','exp');
+    spawnParticles(btn);
+    checkLevelUp();
+  }else{
+    hp=Math.max(0,hp-10);
+    dotStates[qIdx]='wrong';
+    showPopup(btn,'-10 HP','hp');
+    var card=document.getElementById('qCard');
+    card.classList.add('flash-red');
+    setTimeout(function(){card.classList.remove('flash-red');},500);
+  }
+  updateStatus();
+  var expArea=document.getElementById('expArea');
+  expArea.innerHTML='<div class="explanation '+(isCorrect?'correct-exp':'wrong-exp')+'">'+
+    '<div class="exp-title">'+(isCorrect?'✨ 正解！':'💢 不正解...')+'</div>'+
+    '<div>'+q.exp+'</div></div>'+
+    '<button class="btn-next" onclick="nextQ()">次の問題へ ▶</button>';
+  mjTypeset(expArea);
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function nextQ(){
+  qIdx++;
+  showQuestion();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function showResult(){
+  document.getElementById('gameArea').classList.remove('active');
+  document.getElementById('statusBar').classList.remove('active');
+  document.getElementById('resultScreen').classList.add('show');
+  var pct=Math.round(score/setTotal*100);
+  var rankEmoji,rankName;
+  if(pct>=90){rankEmoji='👑';rankName='伝説の賢者';}
+  else if(pct>=70){rankEmoji='🏆';rankName='優秀な魔導士';}
+  else if(pct>=50){rankEmoji='⚗️';rankName='努力の術士';}
+  else{rankEmoji='🌱';rankName='見習い魔法使い';}
+  document.getElementById('resultBadge').textContent='第'+(setIdx+1)+'周 / 全3周（'+setTotal+'問セット）';
+  document.getElementById('resultRankEmoji').textContent=rankEmoji;
+  document.getElementById('resultRankName').textContent=rankName;
+  document.getElementById('rCorrect').textContent=score+'/'+setTotal;
+  document.getElementById('rLv').textContent=lv;
+  document.getElementById('rExp').textContent=totalExpGained;
+  var btn=document.getElementById('btnNextRound');
+  if(setIdx===0){btn.textContent='第2周へ進む（残り2周）';btn.onclick=restartGame;}
+  else if(setIdx===1){btn.textContent='第3周へ進む（残り1周）';btn.onclick=restartGame;}
+  else{btn.textContent='最初から全部やり直す';btn.onclick=function(){setIdx=-1;restartGame();};}
+}
+
+function updateStatus(){
+  document.getElementById('hpVal').textContent=hp;
+  document.getElementById('expVal').textContent=totalExpGained;
+  document.getElementById('scoreVal').textContent=score;
+  var hpFill=document.getElementById('hpFill');
+  hpFill.style.width=hp+'%';
+  hpFill.style.background=hp>60?'#22c55e':hp>30?'#eab308':'#ef4444';
+  var curLv=LEVELS[lv-1];
+  var nextLv=LEVELS[lv];
+  var expNext=nextLv?nextLv.expReq:99999;
+  var expCur=curLv.expReq;
+  var pct=nextLv?Math.min(100,Math.round((totalExpGained-expCur)/(expNext-expCur)*100)):100;
+  document.getElementById('expFill').style.width=pct+'%';
+  document.getElementById('lvBadge').textContent='Lv'+lv+' '+curLv.title+curLv.emoji;
+}
+
+function checkLevelUp(){
+  while(lv<10&&totalExpGained>=LEVELS[lv].expReq){lv++;showLvUp();}
+}
+
+function showLvUp(){
+  var d=LEVELS[lv-1];
+  document.getElementById('lvUpEmoji').textContent=d.emoji;
+  document.getElementById('lvUpRank').textContent='Lv'+lv+'「'+d.title+'」';
+  document.getElementById('lvUpSkill').textContent='新スキル：'+d.skill;
+  var sc=document.getElementById('starsContainer');
+  sc.innerHTML='';
+  for(var i=0;i<16;i++){
+    var s=document.createElement('div');
+    s.className='star';s.textContent='⭐';
+    s.style.left=Math.random()*100+'%';
+    s.style.top=Math.random()*100+'%';
+    s.style.animationDelay=Math.random()*.5+'s';
+    sc.appendChild(s);
+  }
+  document.getElementById('lvOverlay').classList.add('show');
+}
+function closeLvUp(){document.getElementById('lvOverlay').classList.remove('show');}
+
+function showPopup(el,text,type){
+  var rect=el.getBoundingClientRect();
+  var p=document.createElement('div');
+  p.className='popup '+type;p.textContent=text;
+  p.style.left=(rect.left+rect.width/2)+'px';
+  p.style.top=(rect.top+window.scrollY-10)+'px';
+  document.body.appendChild(p);
+  setTimeout(function(){p.remove();},900);
+}
+
+function spawnParticles(el){
+  var rect=el.getBoundingClientRect();
+  var colors=['#a5f3fc','#c4b5fd','#fde68a','#bbf7d0','#f0abfc'];
+  for(var i=0;i<12;i++){
+    var p=document.createElement('div');
+    p.className='particle';
+    var size=6+Math.random()*8;
+    var angle=Math.random()*Math.PI*2;
+    var dist=40+Math.random()*60;
+    p.style.cssText='width:'+size+'px;height:'+size+'px;'+
+      'background:'+colors[Math.floor(Math.random()*colors.length)]+';'+
+      'left:'+(rect.left+rect.width/2)+'px;'+
+      'top:'+(rect.top+rect.height/2+window.scrollY)+'px;'+
+      '--dx:'+(Math.cos(angle)*dist)+'px;'+
+      '--dy:'+(Math.sin(angle)*dist-40)+'px;'+
+      'animation-delay:'+(Math.random()*.1)+'s;';
+    document.body.appendChild(p);
+    setTimeout(function(){p.remove();},900);
+  }
+}
+
+function mjTypeset(el){
+  if(window.MathJax&&typeof MathJax.typesetPromise==='function'){
+    MathJax.typesetPromise(el?[el]:[]).catch(function(){});
+  }
+}
+</script>
+</body>
+</html>
